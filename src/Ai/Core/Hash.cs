@@ -4,7 +4,7 @@ using System.Collections;
 
 namespace System.Ai.Collections {
     public partial class Hash<T> : IEnumerable<T>
-            where T : _Dot {
+            where T : Dot {
         protected Func<string, int, T> _factory;
         public Hash(Func<string, int, T> factory, int capacity) {
             if (capacity > 31048576 || capacity < 0) {
@@ -20,7 +20,7 @@ namespace System.Ai.Collections {
         public T this[string id, int hashCode] {
             get {
                 if (id == null || id.Length == 0) return /*!*/ null;
-                int index = _Dot.LinearProbe(_hash, id, hashCode,
+                int index = Dot.LinearProbe(_hash, id, hashCode,
                     out T row, out int depth);
                 if (index < 0) {
                     return null;
@@ -31,7 +31,7 @@ namespace System.Ai.Collections {
         public T this[string id] {
             get {
                 if (id == null || id.Length == 0) return /*!*/ null;
-                int index = _Dot.LinearProbe(_hash, id, _Dot.ComputeHashCode(id),
+                int index = Dot.LinearProbe(_hash, id, Dot.ComputeHashCode(id),
                     out T row, out int depth);
                 if (index < 0) {
                     return /*!*/ null;
@@ -45,10 +45,10 @@ namespace System.Ai.Collections {
             _hash = new T[_hash.Length];
             _count = 0; _depth = 0;
         }
-        public T Push(string id) { return Push(id, _Dot.ComputeHashCode(id)); }
+        public T Push(string id) { return Push(id, Dot.ComputeHashCode(id)); }
         public T Push(string id, int hashCode) {
             for (; ;) {
-                int index = _Dot.LinearProbe(_hash, id, hashCode,
+                int index = Dot.LinearProbe(_hash, id, hashCode,
                     out T row, out int depth);
                 if (index < 0) {
                     throw new OutOfMemoryException();

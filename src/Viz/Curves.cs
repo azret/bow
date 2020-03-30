@@ -5,17 +5,15 @@ using System.Drawing;
 using Microsoft.Win32.Gdi;
 
 unsafe partial class Curves {
-    public static void DrawCurves(Graphics g, RectangleF r, float t, IEnumerable<Dot> W) {
+    public static void DrawCurves(Graphics g, RectangleF r, float t, Model W) {
         g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
         g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
         DrawPaper(g, r);
-
-        void DrawClassifier(Dot w, Brush b) {
+        void DrawClassifier(Classifier w, Brush b) {
             if (w != null && w.GetVector() != null) {
                 DrawVector(g, r, w.GetVector(), b);
             }
         }
-
         int i = 0;
         foreach (var w in W) {
             if (i >= Colors.Length) {
@@ -24,7 +22,7 @@ unsafe partial class Curves {
             DrawClassifier(w, Colors[i]);
             i++;
         }
-
+        DrawLoss(g, r, W.GetLoss());
         DrawPhase(g, r, t);
     }
 
@@ -47,51 +45,6 @@ unsafe partial class Curves {
                 g.DrawLine(pen,
                     new PointF(0, y),
                     new PointF(r.Width, y));
-            }
-        }
-        g.PixelOffsetMode = PixelOffsetMode;
-    }
-
-    private static void DrawBars(Graphics g,
-        RectangleF r,
-        byte Xscale = 16,
-        byte Yscale = 16,
-        Func<int, float> GetAmplitude = null,
-        Func<int, bool> GetPeak = null,
-        Brush brush = null) {
-        var PixelOffsetMode = g.PixelOffsetMode;
-        g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
-        g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
-        var pen = Pens.LightGray;
-        int i = 0;
-        for (int x = 0; x < r.Width; x += Xscale) {
-            if (x % Xscale == 0) {
-                var ampl = GetAmplitude(i);
-                if (Math.Abs(ampl) > 0.01) {
-                    var h = ((int)((int)(r.Height / Yscale) / 2) * ampl) * Yscale;
-                    var med = (int)((int)(r.Height / Yscale) / 2) * Yscale;
-                    if (h > 0) {
-                        g.FillRectangle(brush,
-                            x, med - h, Xscale, h);
-                        g.DrawRectangle(pen,
-                            x, med - h, Xscale, h);
-                        if (GetPeak(i)) {
-                            g.FillEllipse(Brushes.Gray, x + (Xscale / 2) - 3,
-                                med - h - Yscale / 2 - 3, 7, 7);
-                        }
-                    } else if (h < 0) {
-                        h *= -1;
-                        g.FillRectangle(brush,
-                            x, med, Xscale, h);
-                        g.DrawRectangle(pen,
-                            x, med, Xscale, h);
-                        if (GetPeak(i)) {
-                            g.FillEllipse(Brushes.Gray, x + (Xscale / 2) - 3,
-                                med + h + Yscale / 2 - 3, 7, 7);
-                        }
-                    }
-                }
-                i++;
             }
         }
         g.PixelOffsetMode = PixelOffsetMode;
@@ -132,43 +85,12 @@ unsafe partial class Curves {
         g.PixelOffsetMode = PixelOffsetMode;
     }
 
-    static void DrawLabels(Graphics g, RectangleF r, float phase, float hz, Complex[] fft, int startBin, int endBin) {
-        string s = $"{fft.Length} at {hz}Hz";
-        if (s != null) {
-            var sz = g.MeasureString(s, Plot2D.Font);
+    static void DrawLoss(Graphics g, RectangleF r, double loss) {
+        string szLoss = $"Loss: {loss}";
+        if (szLoss != null) {
+            var sz = g.MeasureString(szLoss, Plot2D.Font);
             g.DrawString(
-                s, Plot2D.Font, Brushes.DarkGray, r.Left + 8,
-                 8);
-        }
-        s = $"{(startBin + 1) * (hz / fft.Length):n2}Hz";
-        if (s != null) {
-            var sz = g.MeasureString(s, Plot2D.Font);
-            g.DrawString(
-                s, Plot2D.Font, Brushes.DarkGray, r.Left + 8,
-                  r.Bottom - 8 - sz.Height);
-        }
-        s = $"{(endBin + 1) * (hz / fft.Length):n2}Hz";
-        if (s != null) {
-            var sz = g.MeasureString(s, Plot2D.Font);
-            g.DrawString(
-                s, Plot2D.Font, Brushes.DarkGray, r.Right - 8 - sz.Width,
-                  r.Bottom - 8 - sz.Height);
-        }
-        s = $"{((endBin + 1) / 2) * (hz / fft.Length):n2}Hz";
-        if (s != null) {
-            var sz = g.MeasureString(s, Plot2D.Font);
-            g.DrawString(
-                s, Plot2D.Font, Brushes.DarkGray, r.Left + r.Width / 2 - sz.Width / 2,
-                  r.Bottom - 8 - sz.Height);
-        }
-    }
-
-    static void DrawLabels(Graphics g, RectangleF r, float phase, float hz, float[] X) {
-        string szRate = $"{X.Length} at {hz}Hz";
-        if (szRate != null) {
-            var sz = g.MeasureString(szRate, Plot2D.Font);
-            g.DrawString(
-                szRate, Plot2D.Font, Brushes.DarkGray, r.Left + 8,
+                szLoss, Plot2D.Font, Brushes.DarkGray, r.Left + 8,
                  8);
         }
     }
@@ -203,12 +125,12 @@ unsafe partial class Curves {
         // Brushes.Linen,
         // Brushes.PaleGreen,
         // Brushes.PaleTurquoise,
-        // Brushes.PaleVioletRed,
+        Brushes.PaleVioletRed,
         // Brushes.SlateBlue,
         // Brushes.SlateGray,
         // Brushes.Snow,
-        Brushes.SpringGreen,
-        Brushes.SteelBlue,
+        // Brushes.SpringGreen,
+        // Brushes.SteelBlue,
         // Brushes.Tan,
         // Brushes.SkyBlue,
         // Brushes.Teal,
@@ -236,7 +158,7 @@ unsafe partial class Curves {
         // Brushes.Salmon,
         // Brushes.SandyBrown,
         // Brushes.SeaGreen,
-        Brushes.Red,
+        // Brushes.Red,
         // Brushes.Yellow,
         // Brushes.LightPink,
         // Brushes.LightGreen,

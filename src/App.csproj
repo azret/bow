@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{E7436049-3E6D-47D9-A35D-78143F5212AD}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>ML</RootNamespace>
-    <AssemblyName>103</AssemblyName>
+    <RootNamespace>_App</RootNamespace>
+    <AssemblyName>App</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -50,7 +50,9 @@
     <Compile Include="Ai\Core\Bag.cs" />
     <Compile Include="Ai\Core\Classifier.cs" />
     <Compile Include="Ai\Core\Hash.cs" />
+    <Compile Include="Ai\Core\IModel.cs" />
     <Compile Include="Ai\Core\ITrainer.cs" />
+    <Compile Include="Ai\Core\Model.cs" />
     <Compile Include="Ai\Core\Search.cs" />
     <Compile Include="Ai\Trainers\_103.cs" />
     <Compile Include="Cli\Cli.cs" />

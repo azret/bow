@@ -1,7 +1,7 @@
 ﻿namespace System.Ai {
-    public partial class _Dot : IEquatable<_Dot> {
-        public static _Dot Factory(string id, int hashCode) {
-            return new _Dot(id, hashCode);
+    public partial class Dot : IEquatable<Dot> {
+        public static Dot Factory(string id, int hashCode) {
+            return new Dot(id, hashCode);
         }
         public static int ComputeHashCode(string id) {
             uint h = 2166136261;
@@ -12,7 +12,7 @@
             }
         }
         public static int LinearProbe<T>(T[] hash, string id, int hashCode,
-            out T dot, out int depth) where T : _Dot {
+            out T dot, out int depth) where T : Dot {
             dot = null; depth = 0;
             if (hash == null) {
                 return -1;
@@ -32,10 +32,10 @@
             }
             return i;
         }
-        public _Dot() {
+        public Dot() {
             HashCode = base.GetHashCode();
         }
-        public _Dot(string id, int hashCode) {
+        public Dot(string id, int hashCode) {
             if (id == null || id.Length == 0) {
                 throw new ArgumentNullException(nameof(id));
             }
@@ -71,10 +71,10 @@
             if (other == null) { return this == null; }
             if (ReferenceEquals(other, this)) { return true; }
             if (other is string s) { return string.Equals(Id, s); }
-            if (other is _Dot g) { return Equals(g); }
+            if (other is Dot g) { return Equals(g); }
             return false;
         }
-        public bool Equals(_Dot other) {
+        public bool Equals(Dot other) {
             if (other == null) { return this == null; }
             if (ReferenceEquals(other, this)) { return true; }
             return string.Equals(Id, other.Id);
@@ -95,30 +95,5 @@
         // public int CompareTo(Dot other) {
         //     return CompareTo(this, other);
         // }
-    }
-    public class Dot : _Dot {
-        readonly Complex[] Vector;
-        public Dot(string id, int hashCode, int dims)
-            : base(id, hashCode) {
-            if (dims < 0 || dims > 1024) {
-                throw new ArgumentOutOfRangeException(nameof(dims));
-            }
-            Vector = new Complex[dims];
-        }
-        public int Length { get => Vector.Length; }
-        public Complex[] GetVector() => Vector;
-        public void Randomize() {
-            for (int i = 0; i < Vector.Length; i++) {
-                Vector[i].Re = ((global::Random.Next() & 0xFFFF) / (65536f) - 0.5f);
-                Vector[i].Im = ((global::Random.Next() & 0xFFFF) / (65536f) - 0.5f);
-            }
-        }
-        public float Compute(float[] X) {
-            var dot = 0f;
-            for (int j = 0; j < X.Length; j++) {
-                dot += ((Vector[j].Re + Vector[j].Im) / 2.0f) * X[j];
-            }
-            return (float)SigQ.f(dot);
-        }
     }
 }

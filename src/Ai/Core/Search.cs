@@ -4,9 +4,9 @@ using System.Linq;
 
 namespace System.Ai {
     public static class Search {
-        public static Tuple<string, float>[] Predict(this IEnumerable<Dot> model, float[] X, int take) {
+        public static Tuple<string, float>[] Predict(this IEnumerable<Classifier> model, float[] X, int take) {
             Tuple<string, float>[] best = new Tuple<string, float>[take];
-            foreach (Dot wo in model) {
+            foreach (Classifier wo in model) {
                 int b = 0;
                 for (int j = 0; j < best.Length; j++) {
                     if (best[j] == null) {
@@ -24,7 +24,7 @@ namespace System.Ai {
             }
             return best;
         }
-        public static void RunFullCosineSearch(this Classifier model, string Q, int max) {
+        public static void RunFullCosineSearch(this Model model, string Q, int max) {
             if (model == null || string.IsNullOrWhiteSpace(Q)) {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine("Model not loaded.\r\n");

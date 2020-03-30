@@ -1,43 +1,27 @@
-﻿using System.Ai.Collections;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace System.Ai {
-    public class Classifier : IEnumerable<Dot> {
-        protected readonly Hash<Dot> Hash;
-        public int Dims { get; }
-        private Classifier(int dims) {
-            Dims = dims;
+﻿namespace System.Ai {
+    public class Classifier : Dot {
+        readonly Complex[] W;
+        public Classifier(string id, int hashCode, int dims)
+            : base(id, hashCode) {
+            if (dims < 0 || dims > 1024) {
+                throw new ArgumentOutOfRangeException(nameof(dims));
+            }
+            W = new Complex[dims];
         }
-        public Classifier(int capacity, int dims) : this(dims) {
-            Hash = new Hash<Dot>((id, hashCode) => new Dot(id, hashCode, Dims), capacity);
-        }
-        public void Clear() => Hash.Clear();
-        public IEnumerator<Dot> GetEnumerator() => Hash.GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => Hash.GetEnumerator();
-        public Dot this[string id] => Hash[id];
-        public Dot Push(string id) => Hash.Push(id);
+        public int Length { get => W.Length; }
+        public Complex[] GetVector() => W;
         public void Randomize() {
-            foreach (Dot wo in Hash) {
-                wo.Randomize();
+            for (int i = 0; i < W.Length; i++) {
+                W[i].Re = ((global::Random.Next() & 0xFFFF) / (65536f) - 0.5f);
+                W[i].Im = ((global::Random.Next() & 0xFFFF) / (65536f) - 0.5f);
             }
         }
-        public IEnumerable<Complex[]> Select(IEnumerable<string> bag) {
-            Complex[][] list = new Complex[bag.Count()][]; int n = 0;
-            foreach (var i in bag) {
-                Dot w = Hash[i];
-                if (w != null) {
-                    if (n + 1 > list.Length) {
-                        break;
-                    }
-                    list[n++] = w.GetVector();
-                }
+        public float Compute(float[] X) {
+            var dot = 0f;
+            for (int j = 0; j < X.Length; j++) {
+                dot += ((W[j].Re + W[j].Im) / 2.0f) * X[j];
             }
-            if (n != list.Length) {
-                Array.Resize(ref list, n);
-            }
-            return list;
+            return (float)SigQ.f(dot);
         }
     }
 }

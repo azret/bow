@@ -14,7 +14,7 @@ unsafe partial class App {
         set => Environment.CurrentDirectory = value;
     }
 
-    public System.Ai.Classifier CurrentModel;
+    public System.Ai.Model CurrentModel;
 
     static IDictionary<string, Func<App, string, Func<bool>, bool>> _handlers = new Dictionary<string, Func<App, string, Func<bool>, bool>>();
 

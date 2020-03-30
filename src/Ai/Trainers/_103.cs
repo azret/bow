@@ -4,65 +4,84 @@ using System.Threading;
 
 namespace System.Ai.Trainers {
     public class _103 : Logistic, ITrainer<IList<Bag>> {
-        Classifier _model;
-        public _103(Classifier model) {
+        Model _model;
+        public _103(Model model) {
             _model = model;
         }
         public void OnTrain(IList<Bag> data) {
             int NEGATIVES = 3;
             int RADIUS = 7;
             const float lr = 0.0371f;
+            double loss = 0,
+                cc = 0;
             Bag pos = data[global::Random.Next(data.Count)];
             foreach (var i in pos) {
-                var wo = _model[i.Id];
-                if (wo != null) {
-                    var bag = new Bag();
+                var y = _model[i.Id];
+                if (y != null) {
+                    var X = new Bag();
                     for (var r = 0; r < RADIUS; r++) {
-                        var wi = _model[pos.Get(global::Random.Next(pos.Capacity))];
-                        if (wi != null && !wi.Id.Equals(wo.Id)) {
-                            bag.Push(wi.Id);
+                        var x = _model[pos.Get(global::Random.Next(pos.Capacity))];
+                        if (x != null && !x.Id.Equals(y.Id)) {
+                            X.Push(x.Id);
                         }
                     }
-                    if (bag.Count > 0) {
+                    if (X.Count > 0) {
                         const float POSITIVE = 1.0f;
-                        var y = Sgd(
-                            wo.GetVector(),
-                            _model.Select(bag),
+                        var o = Sgd(
+                            y.GetVector(),
+                            _model.Select(X),
                             lr,
                             POSITIVE);
-                        _LOG_(bag, wo, POSITIVE, y, 0);
+                        var err = -System.Math.Log(o);
+                        if (!double.IsNaN(err) && !double.IsInfinity(err)) {
+                            loss += err;
+                            cc++;
+                            _LOG_(X, y.Id, POSITIVE, o, loss / cc);
+                        } else {
+                            Console.WriteLine("NaN or Infinity detected...");
+                        }
                     }
                 }
-                if (NEGATIVES > 0 && wo != null) {
+                if (NEGATIVES > 0 && y != null) {
                     Bag neg = data[global::Random.Next(data.Count)];
                     if (neg != pos) {
-                        var bag = new Bag();
+                        var X = new Bag();
                         for (var r = 0; r < RADIUS; r++) {
-                            var wi = _model[neg.Get(global::Random.Next(neg.Capacity))];
-                            if (wi != null && !wi.Id.Equals(wo.Id)) {
-                                bag.Push(wi.Id);
+                            var x = _model[neg.Get(global::Random.Next(neg.Capacity))];
+                            if (x != null && !x.Id.Equals(y.Id)) {
+                                X.Push(x.Id);
                             }
                         }
-                        if (bag.Count > 0) {
+                        if (X.Count > 0) {
                             const float NEGATIVE = 0.0f;
-                            var y = Sgd(
-                                wo.GetVector(),
-                                _model.Select(bag),
+                            var o = Sgd(
+                                y.GetVector(),
+                                _model.Select(X),
                                 lr,
                                 NEGATIVE);
-                            _LOG_(bag, wo, NEGATIVE, y, 0);
+                            var err = -System.Math.Log(1.0 - o);
+                            if (!double.IsNaN(err) && !double.IsInfinity(err)) {
+                                loss += err;
+                                cc++;
+                                _LOG_(X, y.Id, NEGATIVE, o, loss / cc);
+                            } else {
+                                Console.WriteLine("NaN or Infinity detected...");
+                            }
                         }
                     }
                 }
             }
+            if (cc > 0) {
+                _model.SetLoss(loss / cc);
+            }
         }
         const int VERBOSITY = 13;
         int verbOut;
-        void _LOG_(IEnumerable<string> input, Dot output, float target, double y, double err) {
-            if (err == 0 || (verbOut >= 0 && ((verbOut % VERBOSITY) == 0))) {
-                Console.Write($"[{Thread.CurrentThread.ManagedThreadId}] ({verbOut}) : " +
-                    $"p(y = {Convert.ToInt32(target)}, {output.Id} | {string.Join<string>(", ", input)})" +
-                    $" = {y}\r\n");
+        void _LOG_(IEnumerable<string> X, string id, float t, double o, double loss) {
+            if ((verbOut >= 0 && ((verbOut % VERBOSITY) == 0))) {
+                Console.Write($"[{Thread.CurrentThread.ManagedThreadId}] ({verbOut}), Loss: {loss} : " +
+                    $"p(y = {Convert.ToInt32(t)}, {id} | {string.Join<string>(", ", X)})" +
+                    $" = {o}\r\n");
             }
             Interlocked.Increment(ref verbOut);
         }

@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Collections;
 
 namespace System.Ai.Collections {
-    public class Bag<T> : _Dot, IEnumerable<T> where T : _Dot {
+    public class Bag<T> : Dot, IEnumerable<T> where T : Dot {
         protected Func<string, int, T> _factory;
         public Bag(Func<string, int, T> factory)
             : base() {
@@ -198,12 +198,12 @@ namespace System.Ai.Collections {
         }
     }
 
-    public class Bag : Bag<_Dot>, IEnumerable<string>, ICollection<string> {
+    public class Bag : Bag<Dot>, IEnumerable<string>, ICollection<string> {
         public Bag()
-            : base(_Dot.Factory) {
+            : base(Dot.Factory) {
         }
         public Bag(string id, int hashCode)
-            : base(id, hashCode, _Dot.Factory) {
+            : base(id, hashCode, Dot.Factory) {
         }
         bool ICollection<string>.IsReadOnly => false;
         public void Add(string id) {

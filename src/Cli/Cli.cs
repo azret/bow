@@ -72,7 +72,7 @@ unsafe partial class Cli {
             GENS = (int)1e6,
             DIMS = 7;
 
-        var model = app.CurrentModel = new System.Ai.Classifier(CAPACITY, DIMS);
+        var model = app.CurrentModel = new System.Ai.Model(CAPACITY, DIMS);
 
         foreach (var c in data) {
             foreach (var id in c) {
