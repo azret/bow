@@ -17,7 +17,7 @@ namespace System.Ai {
                         b = j;
                     }
                 }
-                var score = wo.Compute(X);
+                var score = Logistic.Compute(wo.GetVector(), X);
                 if (best[b] == null || best[b].Item2 < score) {
                     best[b] = new Tuple<string, float>(wo.Id, score);
                 }

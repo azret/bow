@@ -2,7 +2,7 @@ using System;
 using System.Ai;
 using System.Collections.Generic;
 using System.Drawing;
-using Microsoft.Win32.Gdi;
+using Microsoft.Gdi32;
 
 unsafe partial class Curves {
     public static void DrawCurves(Graphics g, RectangleF r, float t, Model W) {
@@ -88,9 +88,9 @@ unsafe partial class Curves {
     static void DrawLoss(Graphics g, RectangleF r, double loss) {
         string szLoss = $"Loss: {loss}";
         if (szLoss != null) {
-            var sz = g.MeasureString(szLoss, Plot2D.Font);
+            var sz = g.MeasureString(szLoss, Gdi32.Font);
             g.DrawString(
-                szLoss, Plot2D.Font, Brushes.DarkGray, r.Left + 8,
+                szLoss, Gdi32.Font, Brushes.DarkGray, r.Left + 8,
                  8);
         }
     }
@@ -98,9 +98,9 @@ unsafe partial class Curves {
     static void DrawPhase(Graphics g, RectangleF r, float phase) {
         string szPhase = $"{phase:n2}s";
         if (szPhase != null) {
-            var sz = g.MeasureString(szPhase, Plot2D.Font);
+            var sz = g.MeasureString(szPhase, Gdi32.Font);
             g.DrawString(
-                szPhase, Plot2D.Font, Brushes.DarkGray, r.Right - 8 - sz.Width,
+                szPhase, Gdi32.Font, Brushes.DarkGray, r.Right - 8 - sz.Width,
                  8);
         }
     }

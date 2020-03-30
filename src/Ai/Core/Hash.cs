@@ -104,22 +104,22 @@ namespace System.Ai.Collections {
             }
             return list;
         }
-        // public static T[] Sort(Matrix<T> M, int skip = 0, int take = int.MaxValue) {
-        //     T[] sort = Sequence(M);
-        //     Array.Sort(
-        //         sort,
-        //         (a, b) => -a.Re.CompareTo(b.Re));
-        //     if (take < sort.Length) {
-        //         Array.Resize(ref sort, take);
-        //     }
-        //     return sort;
-        // }
-        // public static T[] Sort(Matrix<T> M, Comparison<T> comparison) {
-        //     T[] sort = Sequence(M);
-        //     Array.Sort(
-        //         sort,
-        //         comparison);
-        //     return sort;
-        // }
+        public static T[] Sort(Hash<T> M, int take = int.MaxValue) {
+            T[] sort = Sequence(M);
+            Array.Sort(
+                sort,
+                (a, b) => -a.ζ.Re.CompareTo(b.ζ.Re));
+            if (take < sort.Length) {
+                Array.Resize(ref sort, take);
+            }
+            return sort;
+        }
+        public static T[] Sort(Hash<T> M, Comparison<T> comparison) {
+            T[] sort = Sequence(M);
+            Array.Sort(
+                sort,
+                comparison);
+            return sort;
+        }
     }
 }

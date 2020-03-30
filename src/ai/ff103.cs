@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Threading;
 
 namespace System.Ai.Trainers {
-    public class _103 : Logistic, ITrainer<IList<Bag>> {
+    public class ff103 : Logistic, ITrainer<IList<Bag>> {
         Model _model;
-        public _103(Model model) {
+        public ff103(Model model) {
             _model = model;
         }
         public void OnTrain(IList<Bag> data) {

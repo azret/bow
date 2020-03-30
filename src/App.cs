@@ -5,8 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using Microsoft.Gdi32;
 using Microsoft.Win32;
-using Microsoft.Win32.Gdi;
 
 unsafe partial class App {
     public string CurrentDirectory {
@@ -29,7 +29,7 @@ unsafe partial class App {
                 if (Directory.Exists(dir)) {
                     app.CurrentDirectory = dir;
                 }
-                return global::Cli._103(app, app.CurrentDirectory, IsTerminated);
+                return global::Exec.Fit(app, app.CurrentDirectory, IsTerminated);
             };
     }
 
@@ -105,7 +105,7 @@ unsafe partial class App {
                     return h.Value(app, cliScript, IsTerminated);
                 }
             }
-            return global::Cli.Search(app, cliScript, IsTerminated);
+            return global::Exec.Search(app, cliScript, IsTerminated);
         }
         return false;
     }

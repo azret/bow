@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Win32.Gdi {
+﻿namespace Microsoft.Gdi32 {
     using System;
     using System.ComponentModel;
     using System.Drawing;
@@ -14,11 +14,11 @@
         void WM_CLOSE(IntPtr hWnd, IntPtr wParam, IntPtr lParam);
     }
 
-    public class Plot2D {
+    public class Gdi32 {
         public static readonly Font Font = new Font("Consolas", 14.5f);
     }
 
-    public class Gdi32<T> : Plot2D, IDisposable
+    public class Gdi32<T> : Gdi32, IDisposable
         where T: class {
         public delegate void DrawFrame(Graphics g, RectangleF fill, float t, T userState);
         public enum SystemIcons {

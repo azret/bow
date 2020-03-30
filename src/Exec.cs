@@ -4,8 +4,9 @@ using System.Ai.Collections;
 using System.Ai.Trainers;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 
-unsafe partial class Cli {
+unsafe partial class Exec {
     public static bool Search(
         App app,
         string cliScript,
@@ -16,7 +17,7 @@ unsafe partial class Cli {
         return false;
     }
 
-    public static bool _103(
+    public static bool Fit(
         App app,
         string dir,
         Func<bool> IsTerminated) {
@@ -76,7 +77,8 @@ unsafe partial class Cli {
 
         foreach (var c in data) {
             foreach (var id in c) {
-                model.Push(id.Id);
+                var it = model.Push(id.Id);
+                it.ζ.Re++;
             }
         }
 
@@ -88,10 +90,14 @@ unsafe partial class Cli {
                        Properties.Resources.Oxygen,
                        new Size(623, 400));
 
-        Runner.Run(new _103(model), GENS,
+        Runner.Run(new ff103(model), GENS,
             data,
             (loss) => { },
             IsTerminated);
+
+        string outputFileName = Path.ChangeExtension(typeof(App).Assembly.Location, ".md");
+
+        Model.SaveToFile(model.Sort(), model.Dims, outputFileName);
 
         return false;
     }

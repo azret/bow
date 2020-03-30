@@ -1,5 +1,6 @@
 ﻿namespace System.Ai {
-    public partial class Dot : IEquatable<Dot> {
+    public partial class Dot : IEquatable<Dot>, IComparable<Dot> {
+        public Complex ζ;
         public static Dot Factory(string id, int hashCode) {
             return new Dot(id, hashCode);
         }
@@ -46,24 +47,6 @@
             HashCode = hashCode;
         }
         public readonly string Id;
-        // public Complex Weight;
-        // public float Re {
-        //     get {
-        //         return Weight.Re;
-        //     }
-        //     set {
-        //         Weight.Re = value;
-        //     }
-        // }
-        // public float Im {
-        //     get {
-        //         return Weight.Im;
-        //     }
-        //     set {
-        //         Weight.Im = value;
-        //     }
-        // }
-        // public Complex[] Vector;
         public readonly int HashCode;
         public override int GetHashCode() => HashCode;
         public override string ToString() { return Id; }
@@ -79,21 +62,21 @@
             if (ReferenceEquals(other, this)) { return true; }
             return string.Equals(Id, other.Id);
         }
-        // public static int CompareTo(Dot a, Dot b) {
-        //     if (a == null) {
-        //         return b == null
-        //             ? 0
-        //             : -1;
-        //     } else if (b == null) {
-        //         return a == null
-        //             ? 0
-        //             : 1;
-        //     } else {
-        //         return a.Re.CompareTo(b.Re);
-        //     }
-        // }
-        // public int CompareTo(Dot other) {
-        //     return CompareTo(this, other);
-        // }
+        public static int CompareTo(Dot a, Dot b) {
+            if (a == null) {
+                return b == null
+                    ? 0
+                    : -1;
+            } else if (b == null) {
+                return a == null
+                    ? 0
+                    : 1;
+            } else {
+                return a.ζ.Re.CompareTo(b.ζ.Re);
+            }
+        }
+        public int CompareTo(Dot other) {
+            return CompareTo(this, other);
+        }
     }
 }

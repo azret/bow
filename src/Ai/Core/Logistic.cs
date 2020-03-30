@@ -3,7 +3,22 @@ using System.Diagnostics;
 
 namespace System.Ai {
     public class Logistic {
-        public float[] Sum(IEnumerable<Complex[]> X) {
+        public static void Randomize(Complex[] β) {
+            for (int i = 0; i < β.Length; i++) {
+                β[i].Re = ((global::Random.Next() & 0xFFFF) / (65536f) - 0.5f);
+                β[i].Im = ((global::Random.Next() & 0xFFFF) / (65536f) - 0.5f);
+            }
+        }
+
+        public static float Compute(Complex[] β, float[] X) {
+            var dot = 0f;
+            for (int j = 0; j < X.Length; j++) {
+                dot += ((β[j].Re + β[j].Im) / 2.0f) * X[j];
+            }
+            return (float)SigQ.f(dot);
+        }
+
+        public static float[] Sum(IEnumerable<Complex[]> X) {
             float[] Re = null;
             int cc = 0;
             foreach (Complex[] x in X) {
@@ -25,17 +40,27 @@ namespace System.Ai {
             return Re;
         }
 
-        public void Update(IEnumerable<Complex[]> X, float[] Δ) {
+        public static void Update(IEnumerable<Complex[]> X, float[] ΔRe, float[] ΔIm) {
             foreach (Complex[] x in X) {
                 if (x == null) continue;
-                Debug.Assert(x.Length == Δ.Length);
+                if (ΔRe != null) {
+                    Debug.Assert(x.Length == ΔRe.Length);
+                }
+                if (ΔIm != null) {
+                    Debug.Assert(x.Length == ΔIm.Length);
+                }
                 for (var j = 0; j < x.Length; j++) {
-                    x[j].Re += Δ[j];
+                    if (ΔRe != null) {
+                        x[j].Re += ΔRe[j];
+                    }
+                    if (ΔIm != null) {
+                        x[j].Im += ΔIm[j];
+                    }
                 }
             }
         }
 
-        public double BinaryLogistic(Complex[] y, float[] X, float t, float lr, float[] Δ) {
+        public static double BinaryLogistic(Complex[] y, float[] X, float t, float lr, float[] Δ) {
             Debug.Assert(X != null);
             Debug.Assert(y != null);
             Debug.Assert(X.Length == y.Length && y.Length == Δ.Length);
@@ -48,31 +73,31 @@ namespace System.Ai {
             }
             o = (float)SigQ.f(o);
             if (Δ != null) {
-                float delta = lr * (t - o);
-                if (float.IsNaN(delta) || float.IsInfinity(delta)) {
+                float δ = lr * (t - o);
+                if (float.IsNaN(δ) || float.IsInfinity(δ)) {
                     Console.WriteLine("NaN or Infinity detected...");
-                    return delta;
+                    return δ;
                 }
                 for (int j = 0; j < len; j++) {
-                    Δ[j] += y[j].Im * delta;
-                    y[j].Im += X[j] * delta;
+                    Δ[j] += y[j].Im * δ;
+                    y[j].Im += X[j] * δ;
                 }
             }
             return o;
         }
 
-        public double Sgd(Complex[] y, IEnumerable<Complex[]> X, float lr, float t) {
+        public static double Sgd(Complex[] y, IEnumerable<Complex[]> X, float lr, float t) {
             Debug.Assert(X != null);
             Debug.Assert(y != null);
             Debug.Assert(t >= 0 && t <= 1);
-            float[] Δ = new float[y.Length];
+            float[] ΔRe = new float[y.Length];
             var o = BinaryLogistic(
                 y,
                 Sum(X),
                 t,
                 lr,
-                Δ);
-            Update(X, Δ);
+                ΔRe);
+            Update(X, ΔRe, null);
             return o;
         }
     }
