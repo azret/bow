@@ -47,24 +47,24 @@
     <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="_ai\Core\Bag.cs" />
-    <Compile Include="_ai\Core\Classifier.cs" />
-    <Compile Include="_ai\Core\Hash.cs" />
-    <Compile Include="_ai\Core\IModel.cs" />
-    <Compile Include="_ai\Core\ITrainer.cs" />
-    <Compile Include="_ai\Core\Model.cs" />
-    <Compile Include="_ai\Core\Search.cs" />
-    <Compile Include="_ai\ff103.cs" />
+    <Compile Include="ai\Core\Bag.cs" />
+    <Compile Include="ai\Core\Classifier.cs" />
+    <Compile Include="ai\Core\Hash.cs" />
+    <Compile Include="ai\Core\IModel.cs" />
+    <Compile Include="ai\Core\ITrainer.cs" />
+    <Compile Include="ai\Core\Model.cs" />
+    <Compile Include="ai\Core\Search.cs" />
+    <Compile Include="ai\ff103.cs" />
     <Compile Include="Exec.cs" />
-    <Compile Include="_ai\Core\Runners.cs" />
-    <Compile Include="_ai\Core\Logistic.cs" />
+    <Compile Include="ai\Core\Runners.cs" />
+    <Compile Include="ai\Core\Logistic.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="_viz\Curves.cs" />
-    <Compile Include="_ai\Core\Dot.cs" />
+    <Compile Include="viz\Curves.cs" />
+    <Compile Include="ai\Core\Dot.cs" />
     <Compile Include="include\Math\Envelopes.cs" />
     <Compile Include="include\Microsoft.Win32\Mic32.cs" />
     <Compile Include="include\Microsoft.Win32\Gdi32.cs" />
