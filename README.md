@@ -1,9 +1,9 @@
 ## Command line parameters
 
-### --fit <dir> 
+### --fit <dir>
 
-Specifies the starting URL to be crawled.
+Specifies the data directory.
 
 ```
-ml --fit https://www.w3.org/TR/html5/ --verbose --viz
+ml --fit D:\ml\data\
 ```
