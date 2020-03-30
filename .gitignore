@@ -1,0 +1,10 @@
+##
+
+*.ignore
+*.okurrr
+*.vocab
+/src/obj
+*.user
+/bin
+/.vs
+/src/.vs
