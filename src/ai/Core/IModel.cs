@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 
 namespace System.Ai {
-    public interface IModel {
-        Classifier this[string id] { get; }
+    public interface IModel : IEnumerable<Classifier> {
         int Dims { get; }
-        void Clear();
+        Classifier this[string id] { get; }
         Classifier Push(string id);
-        void Randomize();
-        IEnumerable<Complex[]> Select(IEnumerable<string> bag);
+        void Clear();
+        Complex[] Select(string id);
+        IEnumerable<Complex[]> Select(IEnumerable<string> id);
     }
 }

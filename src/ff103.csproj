@@ -54,9 +54,9 @@
     <Compile Include="ai\Core\ITrainer.cs" />
     <Compile Include="ai\Core\Model.cs" />
     <Compile Include="ai\Core\Search.cs" />
+    <Compile Include="ai\Core\Trainer.cs" />
     <Compile Include="ai\ff103.cs" />
     <Compile Include="Exec.cs" />
-    <Compile Include="ai\Core\Runners.cs" />
     <Compile Include="ai\Core\Logistic.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -93,6 +93,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <CustomToolNamespace>Properties</CustomToolNamespace>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="include\System.IO\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

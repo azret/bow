@@ -24,11 +24,18 @@ unsafe partial class Exec {
 
         var data = new List<Bag>() {
             new Bag() {
+                "white",
+                "red",
+                "green",
+                "black",
+                "orange",
+                "blue"
+            },
+            new Bag() {
                 "apple",
                 "orange",
                 "fruit",
                 "eat",
-                "drink",
                 "food"
             },
             new Bag() {
@@ -61,43 +68,44 @@ unsafe partial class Exec {
                 "human"
             },
             new Bag() {
-                "book",
-                "school",
-                "pen",
-                "table",
-                "chair"
+                "language",
+                "english",
+                "french",
+                "spanish",
+                "german"
+            },
+            new Bag() {
+                "city",
+                "new york",
+                "los angeles",
+                "paris",
+                "tokyo"
             }
         };
 
         const int CAPACITY = 1048576,
             GENS = (int)1e6,
-            DIMS = 7;
+            DIMS = 37;
 
         var model = app.CurrentModel = new System.Ai.Model(CAPACITY, DIMS);
 
-        foreach (var c in data) {
-            foreach (var id in c) {
-                var it = model.Push(id.Id);
-                it.ζ.Re++;
-            }
-        }
+        var ff103 = new ff103(model, data);
 
-        model.Randomize();
+        ff103.Build();
 
         app.StartWin32UI(null,
-                       Curves.DrawCurves, () => model, "Bag of Words w/ Negative Sampling",
+                       Curves.DrawCurves, () => ff103, "Bag of Words w/ Negative Sampling",
                        Color.White,
                        Properties.Resources.Oxygen,
                        new Size(623, 400));
 
-        Runner.Run(new ff103(model), GENS,
-            data,
-            (loss) => { },
+        Trainer.Run(ff103,
+            GENS,
             IsTerminated);
 
         string outputFileName = Path.ChangeExtension(typeof(App).Assembly.Location, ".md");
 
-        Model.SaveToFile(model.Sort(), model.Dims, outputFileName);
+        Model.SaveToFile(model, model.Dims, outputFileName);
 
         return false;
     }

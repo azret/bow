@@ -20,7 +20,7 @@
             }
             var cc = hash.Length;
             int i = hashCode % cc,
-                         start = i;
+                start = i;
             depth = 0;
             dot = hash[i];
             while (dot != null && (!(dot.GetHashCode() == hashCode && dot.Equals(id)))) {

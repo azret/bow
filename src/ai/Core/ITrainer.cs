@@ -1,5 +1,7 @@
 ﻿namespace System.Ai {
-    public interface ITrainer<T> {
-        void OnTrain(T data);
+    public interface ITrainer {
+        IModel Model { get; }
+        void Execute();
+        double Loss { get; }
     }
 }

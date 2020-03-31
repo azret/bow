@@ -2,9 +2,9 @@
 using System.Threading;
 
 namespace System.Ai {
-    public static class Runner {
-        public static void Run<T>(this ITrainer<T> trainer, int gens, T data,
-            Action<double> SetLoss, Func<bool> HasCtrlBreak) {
+    public static class Trainer {
+        public static void Run(this ITrainer trainer, int gens,
+            Func<bool> HasCtrlBreak) {
             if (trainer == null) {
                 throw new ArgumentNullException(nameof(trainer));
             }
@@ -19,7 +19,7 @@ namespace System.Ai {
                             if (HasCtrlBreak != null && HasCtrlBreak()) {
                                 break;
                             }
-                            trainer.OnTrain(data);
+                            trainer.Execute();
                             Thread.Sleep(
                                 300 + global::Random.Next(70));
                         }

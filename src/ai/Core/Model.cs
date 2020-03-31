@@ -2,43 +2,42 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace System.Ai {
     public partial class Model : IEnumerable<Classifier>, IModel {
-        protected readonly Hash<Classifier> Hash;
-        public int Dims { get; }
+        readonly Hash<Classifier> _hash;
         private Model(int dims) {
             Dims = dims;
         }
         public Model(int capacity, int dims) : this(dims) {
-            Hash = new Hash<Classifier>((id, hashCode) => new Classifier(id, hashCode, Dims), capacity);
+            _hash = new Hash<Classifier>((id, hashCode) => new Classifier(id, hashCode, Dims, true), capacity);
         }
-        public void Clear() => Hash.Clear();
-        public IEnumerator<Classifier> GetEnumerator() => Hash.GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => Hash.GetEnumerator();
-        public Classifier this[string id] => Hash[id];
-        public Classifier Push(string id) => Hash.Push(id);
-        public void Randomize() {
-            foreach (Classifier wo in Hash) {
-                Logistic.Randomize(wo.GetVector());
-            }
-        }
-        double _loss;
-        public void SetLoss(double loss) {
-            _loss = loss;
-        }
-        public double GetLoss() {
-            return _loss;
-        }
+        public int Dims { get; }
+        public void Clear() => _hash.Clear();
+        public IEnumerator<Classifier> GetEnumerator() => _hash.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => _hash.GetEnumerator();
+        public Classifier this[string id] => _hash[id];
+        public Classifier Push(string id) => _hash.Push(id);
+        // public void Randomize() {
+        //     foreach (Classifier wo in Hash) {
+        //      Randomize(wo.GetVector());
+        //  }
+        //     void Randomize(Complex[] β) {
+        //         for (int i = 0; i < β.Length; i++) {
+        //             β[i].Re = ((global::Random.Next() & 0xFFFF) / (float)(0xFFFF)) - 0.5f;
+        //             β[i].Im = ((global::Random.Next() & 0xFFFF) / (float)(0xFFFF)) - 0.5f;
+        //         }
+        //     }
+        // }
         public IEnumerable<Classifier> Sort() {
-            return Hash<Classifier>.Sort(Hash);
+            return Hash<Classifier>.Sort(_hash);
         }
-        public IEnumerable<Complex[]> Select(IEnumerable<string> bag) {
-            Complex[][] list = new Complex[bag.Count()][]; int n = 0;
-            foreach (var i in bag) {
-                Classifier w = Hash[i];
+        public Complex[] Select(string id) => _hash[id]?.GetVector();
+        public IEnumerable<Complex[]> Select(IEnumerable<string> id) {
+            Complex[][] list = new Complex[System.Linq.Enumerable.Count(id)][]; int n = 0;
+            foreach (var sz in id) {
+                Classifier w = _hash[sz];
                 if (w != null) {
                     if (n + 1 > list.Length) {
                         break;

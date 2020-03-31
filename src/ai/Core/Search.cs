@@ -17,14 +17,14 @@ namespace System.Ai {
                         b = j;
                     }
                 }
-                var score = Logistic.Compute(wo.GetVector(), X);
+                var score = Logistic.Dot(wo.GetVector(), X);
                 if (best[b] == null || best[b].Item2 < score) {
                     best[b] = new Tuple<string, float>(wo.Id, score);
                 }
             }
             return best;
         }
-        public static void RunFullCosineSearch(this Model model, string Q, int max) {
+        public static void RunFullCosineSearch(this IModel model, string Q, int max) {
             if (model == null || string.IsNullOrWhiteSpace(Q)) {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine("Model not loaded.\r\n");

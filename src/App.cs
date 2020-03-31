@@ -8,13 +8,79 @@ using System.Threading;
 using Microsoft.Gdi32;
 using Microsoft.Win32;
 
+namespace System.IO {
+    public static class Tools {
+        public static ISet<string> GetDirs(string path) => GetDirs(path, new HashSet<string>());
+        static ISet<string> GetDirs(string path, ISet<string> dirs) {
+            try {
+                var info = new DirectoryInfo(path);
+                var attr = info.Attributes;
+                if ((attr & FileAttributes.Directory) == FileAttributes.Directory) {
+                    if ((attr & FileAttributes.Hidden) != FileAttributes.Hidden) {
+                        dirs.Add(path);
+                        foreach (var s in Directory.EnumerateDirectories(path)) {
+                            GetDirs(s, dirs);
+                        }
+                    }
+                }
+            } catch (System.IO.FileNotFoundException e) {
+                Console.BackgroundColor = ConsoleColor.Red;
+                Console.WriteLine(e.Message);
+                Console.ResetColor();
+            }
+            return dirs;
+        }
+        public static ISet<string> GetFiles(string path, string searchPattern, SearchOption searchOption) {
+            ISet<string> files = new HashSet<string>();
+            var dirs = searchOption == SearchOption.TopDirectoryOnly
+                    ? new HashSet<string>() { path }
+                    : GetDirs(path);
+            foreach (var s in dirs) {
+                foreach (var f in Directory.EnumerateFiles(s, "*.*", SearchOption.TopDirectoryOnly)) {
+                    string file = Path.GetFullPath(f).ToLowerInvariant();
+                    if (searchPattern != null && searchPattern != "*.*") {
+                        if (!searchPattern.Contains(Path.GetExtension(file))) {
+                            continue;
+                        }
+                    }
+                    var attr = File.GetAttributes(file);
+                    if ((attr & FileAttributes.Hidden) != FileAttributes.Hidden) {
+                        files.Add(file);
+                    }
+                }
+            }
+            return files;
+        }
+        public static void Touch(string path, DateTime dt) {
+            foreach (var s in Tools.GetDirs(path)) {
+                try {
+                    Directory.SetCreationTime(s, dt);
+                    Directory.SetLastAccessTime(s, dt);
+                    Directory.SetLastWriteTime(s, dt);
+                } catch (Exception e) {
+                    Console.WriteLine(e.Message);
+                }
+                foreach (var f in Tools.GetFiles(s, "*.*", SearchOption.TopDirectoryOnly)) {
+                    try {
+                        File.SetCreationTime(f, dt);
+                        File.SetLastAccessTime(f, dt);
+                        File.SetLastWriteTime(f, dt);
+                    } catch (Exception e) {
+                        Console.WriteLine(e.Message);
+                    }
+                }
+            }
+        }
+    }
+}
+
 unsafe partial class App {
     public string CurrentDirectory {
         get => Environment.CurrentDirectory.Trim('\\', '/');
         set => Environment.CurrentDirectory = value;
     }
 
-    public System.Ai.Model CurrentModel;
+    public System.Ai.IModel CurrentModel;
 
     static IDictionary<string, Func<App, string, Func<bool>, bool>> _handlers = new Dictionary<string, Func<App, string, Func<bool>, bool>>();
 
@@ -30,6 +96,21 @@ unsafe partial class App {
                     app.CurrentDirectory = dir;
                 }
                 return global::Exec.Fit(app, app.CurrentDirectory, IsTerminated);
+            };
+        _handlers["--touch"] = (
+            App app,
+            string cliScript,
+            Func<bool> IsTerminated) => {
+                cliScript = cliScript
+                    .Replace("--touch", "").Replace("touch", "");
+                var dir = cliScript.Trim();
+                if (Directory.Exists(dir)) {
+                    app.CurrentDirectory = dir;
+                }
+                Tools.Touch(
+                    app.CurrentDirectory,
+                    DateTime.Now);
+                return false;
             };
     }
 
@@ -115,14 +196,15 @@ unsafe partial class App {
     public Thread StartWin32UI<T>(IGdi32Controller controller, Gdi32<T>.DrawFrame onDrawFrame, Func<T> onGetFrame, string title,
         Color bgColor, Icon hIcon = null, Size? size = null)
         where T : class {
-        Thread t = new Thread(() => {
+        Gdi32<T> hWnd = null;
+        var t = new Thread(() => {
             IntPtr handl = IntPtr.Zero;
-            Gdi32<T> hWnd = null;
             try {
                 hWnd = new Gdi32<T>(controller, title,
                     onDrawFrame,
                     TimeSpan.FromMilliseconds(173),
                     onGetFrame, bgColor, hIcon, size);
+                handl = hWnd.hWnd;
                 hWnd.Show();
                 while (User32.GetMessage(out MSG msg, hWnd.hWnd, 0, 0) != 0) {
                     User32.TranslateMessage(ref msg);
@@ -132,6 +214,7 @@ unsafe partial class App {
                 Console.Error?.WriteLine(e);
             } finally {
                 hWnd?.Dispose();
+                hWnd = null;
             }
         });
         t.Start();

@@ -3,19 +3,12 @@ using System.Diagnostics;
 
 namespace System.Ai {
     public class Logistic {
-        public static void Randomize(Complex[] β) {
-            for (int i = 0; i < β.Length; i++) {
-                β[i].Re = ((global::Random.Next() & 0xFFFF) / (65536f) - 0.5f);
-                β[i].Im = ((global::Random.Next() & 0xFFFF) / (65536f) - 0.5f);
-            }
-        }
-
-        public static float Compute(Complex[] β, float[] X) {
-            var dot = 0f;
+        public static float Dot(Complex[] β, float[] X) {
+            var y = 0f;
             for (int j = 0; j < X.Length; j++) {
-                dot += ((β[j].Re + β[j].Im) / 2.0f) * X[j];
+                y += ((β[j].Re + β[j].Im) / 2.0f) * X[j];
             }
-            return (float)SigQ.f(dot);
+            return y;
         }
 
         public static float[] Sum(IEnumerable<Complex[]> X) {

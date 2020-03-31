@@ -5,7 +5,7 @@ using System.Drawing;
 using Microsoft.Gdi32;
 
 unsafe partial class Curves {
-    public static void DrawCurves(Graphics g, RectangleF r, float t, Model W) {
+    public static void DrawCurves(Graphics g, RectangleF r, float t, ITrainer W) {
         g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
         g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
         DrawPaper(g, r);
@@ -15,14 +15,14 @@ unsafe partial class Curves {
             }
         }
         int i = 0;
-        foreach (var w in W) {
+        foreach (var w in W.Model) {
             if (i >= Colors.Length) {
                 break;
             }
-            DrawClassifier(w, Colors[i]);
+            DrawClassifier(w, Colors[i % Colors.Length]);
             i++;
         }
-        DrawLoss(g, r, W.GetLoss());
+        DrawLoss(g, r, W.Loss);
         DrawPhase(g, r, t);
     }
 
@@ -74,11 +74,16 @@ unsafe partial class Curves {
                     = linf(i, F.Length - 1, r.Width);
                 dots.Add(new PointF(x, y));
             }
-            var pts = dots.ToArray();
+            PointF[] pts = dots.ToArray();
             if (pts.Length > 1) {
-                g.DrawCurve(
-                    pen,
-                    pts);
+                //g.DrawCurve(
+                //    pen,
+                //    pts);
+            }
+            foreach (PointF p in pts) {
+                float m = r.Height / 2f;
+                g.FillEllipse(brush, p.X - 3,
+                    p.Y - 3, 7, 7);
             }
             pen.Dispose();
         }
@@ -110,7 +115,7 @@ unsafe partial class Curves {
         Brushes.OrangeRed,
         Brushes.MidnightBlue,
         Brushes.MediumVioletRed,
-        Brushes.MediumSlateBlue,
+        // Brushes.MediumSlateBlue,
         Brushes.LightSeaGreen,
         Brushes.LightSkyBlue,
         // Brushes.LightSlateGray,
@@ -121,7 +126,7 @@ unsafe partial class Curves {
         // Brushes.MediumAquamarine,
         // Brushes.MediumBlue,
         // Brushes.MediumOrchid,
-        Brushes.MediumPurple,
+        // Brushes.MediumPurple,
         // Brushes.Linen,
         // Brushes.PaleGreen,
         // Brushes.PaleTurquoise,
@@ -149,7 +154,7 @@ unsafe partial class Curves {
         // Brushes.Peru,
         // Brushes.Pink,
         // Brushes.Plum,
-        Brushes.PowderBlue,
+        // Brushes.PowderBlue,
         // Brushes.Sienna,
         Brushes.Purple,
         // Brushes.RosyBrown,
@@ -193,14 +198,14 @@ unsafe partial class Curves {
         // Brushes.Brown,
         // Brushes.BurlyWood,
         // Brushes.CadetBlue,
-        Brushes.Black,
+        // Brushes.Black,
         // Brushes.DarkSalmon,
         // Brushes.DarkSeaGreen,
         // Brushes.DarkSlateBlue,
         // Brushes.Honeydew,
-        Brushes.HotPink,
+        // Brushes.HotPink,
         // Brushes.IndianRed,
-        Brushes.Indigo,
+        // Brushes.Indigo,
         // Brushes.Ivory,
         // Brushes.Khaki,
         // Brushes.GreenYellow,
