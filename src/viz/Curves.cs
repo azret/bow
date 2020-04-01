@@ -28,21 +28,30 @@ unsafe partial class Curves {
 
     private static void DrawPaper(Graphics g,
         RectangleF r,
-        byte Xscale = 16,
-        byte Yscale = 16) {
+        byte Xscale = 12,
+        byte Yscale = 12) {
         var PixelOffsetMode = g.PixelOffsetMode;
         g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.None;
-        var pen = Pens.LightGray;
         for (int x = 0; x < r.Width; x += Xscale) {
-            if (x % Xscale == 0) {
-                g.DrawLine(pen,
+            if (x % (Xscale * 4) == 0) {
+                g.DrawLine(Pens.Silver,
+                    new PointF(x, 0),
+                    new PointF(x, r.Height));
+            }
+            else if (x % Xscale == 0) {
+                g.DrawLine(Pens.LightGray,
                     new PointF(x, 0),
                     new PointF(x, r.Height));
             }
         }
         for (int y = 0; y < r.Height; y += Yscale) {
-            if (y % Yscale == 0) {
-                g.DrawLine(pen,
+            if (y % (Yscale * 4) == 0) {
+                g.DrawLine(Pens.Silver,
+                    new PointF(0, y),
+                    new PointF(r.Width, y));
+            }
+            else if (y % Yscale == 0) {
+                g.DrawLine(Pens.LightGray,
                     new PointF(0, y),
                     new PointF(r.Width, y));
             }
@@ -63,9 +72,9 @@ unsafe partial class Curves {
             var dots = new List<PointF>();
             var pen = new Pen(brush.Color, 2f);
             for (int i = 0; i < F.Length; i++) {
-                // var ampl = SigQ.f((F[i].Re + F[i].Im) * 0.5) - 0.5;
+                var ampl = SigF.f((F[i].Re + F[i].Im) * 0.5) - 0.5;
                 // var ampl = ((F[i].Re + F[i].Im) / 2f);
-                var ampl = Tanh.f((F[i].Re + F[i].Im) / 2f);
+                //var ampl = Tanh.f((F[i].Re + F[i].Im) / 2f);
                 if (ampl < -1) {
                     ampl = -1;
                 }

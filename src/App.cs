@@ -51,7 +51,7 @@ namespace System.IO {
             }
             return files;
         }
-        public static void Touch(string path, DateTime dt) {
+        public static void TouchFiles(string path, DateTime dt) {
             foreach (var s in Tools.GetDirs(path)) {
                 try {
                     Directory.SetCreationTime(s, dt);
@@ -107,7 +107,7 @@ unsafe partial class App {
                 if (Directory.Exists(dir)) {
                     app.CurrentDirectory = dir;
                 }
-                Tools.Touch(
+                Tools.TouchFiles(
                     app.CurrentDirectory,
                     DateTime.Now);
                 return false;

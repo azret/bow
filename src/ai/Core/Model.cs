@@ -55,7 +55,7 @@ namespace System.Ai {
             using (var stream = new FileStream(outputFilePath, FileMode.Create, FileAccess.Write, FileShare.None)) {
                 int i = 0;
                 string s;
-                s = $"CBOW " +
+                s = $"#CBOW " +
                     $"| {dims}\r\n";
                 byte[] bytes = Encoding.UTF8.GetBytes(s);
                 stream.Write(bytes,
@@ -76,9 +76,9 @@ namespace System.Ai {
                     }
                     float score = it.GetScore();
                     if (sz.Length > 0) {
-                        s = $"{it.Id} | {score} | {sz.ToString()}\r\n";
+                        s = $"**{it.Id}** | {score} | {sz.ToString()}\r\n";
                     } else {
-                        s = $"{it.Id} | {score}\r\n";
+                        s = $"**{it.Id}** | {score}\r\n";
                     }
                     bytes = Encoding.UTF8.GetBytes(s);
                     stream.Write(bytes,

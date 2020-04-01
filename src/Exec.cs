@@ -20,7 +20,7 @@ unsafe partial class Exec {
 
         const int CAPACITY = 1048576,
             GENS = (int)1e6,
-                 DIMS = 32;
+                 DIMS = 11;
 
         string outputFileName = Path.ChangeExtension(dir.TrimEnd('\\'), ".md");
 
