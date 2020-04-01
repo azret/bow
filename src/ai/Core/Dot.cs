@@ -1,7 +1,6 @@
 ﻿namespace System.Ai {
-    public partial class Dot : IEquatable<Dot>, IComparable<Dot> {
-        public Complex ζ;
-        public static Dot Factory(string id, int hashCode) {
+    public partial class Dot : IEquatable<Dot> {
+        public static Dot Create(string id, int hashCode) {
             return new Dot(id, hashCode);
         }
         public static int ComputeHashCode(string id) {
@@ -33,7 +32,7 @@
             }
             return i;
         }
-        public Dot() {
+        protected Dot() {
             HashCode = base.GetHashCode();
         }
         public Dot(string id, int hashCode) {
@@ -61,22 +60,6 @@
             if (other == null) { return this == null; }
             if (ReferenceEquals(other, this)) { return true; }
             return string.Equals(Id, other.Id);
-        }
-        public static int CompareTo(Dot a, Dot b) {
-            if (a == null) {
-                return b == null
-                    ? 0
-                    : -1;
-            } else if (b == null) {
-                return a == null
-                    ? 0
-                    : 1;
-            } else {
-                return a.ζ.Re.CompareTo(b.ζ.Re);
-            }
-        }
-        public int CompareTo(Dot other) {
-            return CompareTo(this, other);
         }
     }
 }

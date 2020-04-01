@@ -5,39 +5,36 @@ using System.IO;
 using System.Text;
 
 namespace System.Ai {
-    public partial class Model : IEnumerable<Classifier>, IModel {
-        readonly Hash<Classifier> _hash;
+    public partial class Model : IEnumerable<Tensor>, IModel {
+        readonly Hash<Tensor> _hash;
         private Model(int dims) {
             Dims = dims;
         }
         public Model(int capacity, int dims) : this(dims) {
-            _hash = new Hash<Classifier>((id, hashCode) => new Classifier(id, hashCode, Dims, true), capacity);
+            _hash = new Hash<Tensor>((id, hashCode) => new Tensor(id, hashCode, Dims, true), capacity);
         }
         public int Dims { get; }
         public void Clear() => _hash.Clear();
-        public IEnumerator<Classifier> GetEnumerator() => _hash.GetEnumerator();
+        public Tensor[] Sequence() => Hash<Tensor>.Sequence(_hash);
+        public IEnumerator<Tensor> GetEnumerator() => _hash.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => _hash.GetEnumerator();
-        public Classifier this[string id] => _hash[id];
-        public Classifier Push(string id) => _hash.Push(id);
-        // public void Randomize() {
-        //     foreach (Classifier wo in Hash) {
-        //      Randomize(wo.GetVector());
-        //  }
-        //     void Randomize(Complex[] β) {
-        //         for (int i = 0; i < β.Length; i++) {
-        //             β[i].Re = ((global::Random.Next() & 0xFFFF) / (float)(0xFFFF)) - 0.5f;
-        //             β[i].Im = ((global::Random.Next() & 0xFFFF) / (float)(0xFFFF)) - 0.5f;
-        //         }
-        //     }
-        // }
-        public IEnumerable<Classifier> Sort() {
-            return Hash<Classifier>.Sort(_hash);
+        public Tensor this[string id] => _hash[id];
+        public Tensor Push(string id) => _hash.Push(id);
+        public Tensor[] Sort(int take = int.MaxValue) {
+            Tensor[] sort = Sequence();
+            Array.Sort(
+                sort,
+                (a, b) => -a.CompareTo(b));
+            if (take < sort.Length) {
+                Array.Resize(ref sort, take);
+            }
+            return sort;
         }
         public Complex[] Select(string id) => _hash[id]?.GetVector();
         public IEnumerable<Complex[]> Select(IEnumerable<string> id) {
             Complex[][] list = new Complex[System.Linq.Enumerable.Count(id)][]; int n = 0;
             foreach (var sz in id) {
-                Classifier w = _hash[sz];
+                Tensor w = _hash[sz];
                 if (w != null) {
                     if (n + 1 > list.Length) {
                         break;
@@ -53,7 +50,7 @@ namespace System.Ai {
     }
 
     public partial class Model {
-        public static void SaveToFile(IEnumerable<Classifier> Model, int dims, string outputFilePath) {
+        public static void Dump(IEnumerable<Tensor> Model, int dims, string outputFilePath) {
             Console.Write($"\r\nSaving: {outputFilePath}...\r\n");
             using (var stream = new FileStream(outputFilePath, FileMode.Create, FileAccess.Write, FileShare.None)) {
                 int i = 0;
@@ -63,7 +60,7 @@ namespace System.Ai {
                 byte[] bytes = Encoding.UTF8.GetBytes(s);
                 stream.Write(bytes,
                     0, bytes.Length);
-                foreach (Classifier it in Model) {
+                foreach (Tensor it in Model) {
                     if (it == null) {
                         continue;
                     }
@@ -77,7 +74,7 @@ namespace System.Ai {
                             sz.Append(w[j]);
                         }
                     }
-                    var score = it.ζ.Re;
+                    float score = it.GetScore();
                     if (sz.Length > 0) {
                         s = $"{it.Id} | {score} | {sz.ToString()}\r\n";
                     } else {

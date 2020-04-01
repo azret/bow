@@ -10,7 +10,8 @@ namespace System.Ai.Collections {
             if (capacity > 31048576 || capacity < 0) {
                 throw new ArgumentOutOfRangeException(nameof(capacity));
             }
-            _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+            _factory = factory
+                ?? throw new ArgumentNullException(nameof(factory));
             _hash = new T[capacity];
         }
         protected int _count;
@@ -103,23 +104,6 @@ namespace System.Ai.Collections {
                 Array.Resize(ref list, n);
             }
             return list;
-        }
-        public static T[] Sort(Hash<T> M, int take = int.MaxValue) {
-            T[] sort = Sequence(M);
-            Array.Sort(
-                sort,
-                (a, b) => -a.ζ.Re.CompareTo(b.ζ.Re));
-            if (take < sort.Length) {
-                Array.Resize(ref sort, take);
-            }
-            return sort;
-        }
-        public static T[] Sort(Hash<T> M, Comparison<T> comparison) {
-            T[] sort = Sequence(M);
-            Array.Sort(
-                sort,
-                comparison);
-            return sort;
         }
     }
 }

@@ -4,9 +4,9 @@ using System.Linq;
 
 namespace System.Ai {
     public static class Search {
-        public static Tuple<string, float>[] Predict(this IEnumerable<Classifier> model, float[] X, int take) {
+        public static Tuple<string, float>[] Predict(this IEnumerable<Tensor> model, float[] X, int take) {
             Tuple<string, float>[] best = new Tuple<string, float>[take];
-            foreach (Classifier wo in model) {
+            foreach (Tensor wo in model) {
                 int b = 0;
                 for (int j = 0; j < best.Length; j++) {
                     if (best[j] == null) {

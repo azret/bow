@@ -4,23 +4,96 @@ using System.Threading;
 
 namespace System.Ai.Trainers {
     public class ff103 : Logistic, ITrainer {
-        const float lr = 0.1371f;
+        const int VERBOSITY = 13;
 
-        IList<Bag> _data;
+        const float lr = 0.3371f;
 
-        public ff103(IModel model, IList<Bag> data) {
+        const int POSITIVES = 3,
+                NEGATIVES = 3,
+            RADIUS = 7;
+
+        IList<string[]> _data;
+
+        public ff103(IModel model) {
             Model = model;
-            _data = data;
         }
 
-        public void Build() {
+        public void Build(string dir) {
+            var data = new List<string[]>() {
+                new string[] {
+                    "white",
+                    "red",
+                    "green",
+                    "black",
+                    "orange",
+                    "blue"
+                },
+                new string[] {
+                    "apple",
+                    "orange",
+                    "fruit",
+                    "eat",
+                    "food"
+                },
+                new string[] {
+                    "apple",
+                    "google",
+                    "microsoft",
+                    "amazon",
+                },
+                new string[] {
+                    "table",
+                    "chair",
+                    "room",
+                    "door"
+                },
+                new string[] {
+                    "C#",
+                    "JavaScript",
+                    "Java",
+                    "C",
+                    "C++"
+                },
+                new string[] {
+                    "drink",
+                    "coffee",
+                    "tea",
+                    "water",
+                    "wine",
+                    "beer",
+                    "milk"
+                },
+                new string[] {
+                    "cat",
+                    "dog",
+                    "cow",
+                    "monkey",
+                    "animal",
+                    "human"
+                },
+                new string[] {
+                    "language",
+                    "english",
+                    "french",
+                    "spanish",
+                    "german"
+                },
+                new string[] {
+                    "city",
+                    "new york",
+                    "los angeles",
+                    "paris",
+                    "tokyo"
+                }
+            };
+            _data = data;
             foreach (var b in _data) {
                 foreach (var s in b) {
-                    var w = Model.Push(s.Id);
+                    var w = Model.Push(s);
                     if (w == null) {
                         throw new OutOfMemoryException();
                     }
-                    w.ζ.Re++;
+                    w++;
                 }
             }
         }
@@ -32,55 +105,50 @@ namespace System.Ai.Trainers {
 
         double ITrainer.Loss => loss / cc;
 
-        void ITrainer.Execute() {
-            Bag p = Pick(_data);
-            LearnFromPosDistr(p, (y) => {
-                for (var h = 0; h < NEGATIVES; h++) {
-                    Bag n = Pick(_data);
-                    if (n != null & n != p) {
-                        LearnFromNegDistr(n, y);
-                    }
-                }
-            });
-        }
-
-        const int NEGATIVES = 3,
-            RADIUS = 7;
-
-        void LearnFromPosDistr(Bag b, Action<Classifier> a) {
-            foreach (var w in b) {
-                if (w == null)
-                    continue;
-                var y = Model[w.Id];
-                if (y != null) {
-                    Bag X = GetContext(b, RADIUS, y.Id);
-                    if (X.Count > 0) {
-                        const float POSITIVE = 1.0f;
-                        var o = Sgd(lr, ref loss, ref cc, out double err,
-                            POSITIVE, y.GetVector(), Model.Select(X));
-                        if (!double.IsNaN(err) && !double.IsInfinity(err)) {
-                            loss += err;
-                            cc++;
-                            _LOG_(X, y.Id, POSITIVE, o, loss / cc);
-                        } else {
-                            Console.WriteLine("NaN or Infinity detected...");
+        void ITrainer.Dojo() {
+            for (var k = 0; k < POSITIVES; k++) {
+                var Sample = GetSample();
+                foreach (var s in Sample) {
+                    if (s == null)
+                        continue;
+                    var w = Model[s];
+                    if (w != null) {
+                        LearnFromPositiveSample(GetCoOccurrences(Sample, RADIUS), w);
+                        for (var h = 0; h < NEGATIVES; h++) {
+                            var Prime = GetSample();
+                            if (Prime != null & Prime != Sample) {
+                                LearnFromNegativeSample(GetCoOccurrences(Prime, RADIUS), w);
+                            }
                         }
-                        a(y);
                     }
                 }
             }
         }
 
-        void LearnFromNegDistr(Bag b, Classifier y) {
-            var X = GetContext(b, RADIUS, y.Id);
+        void LearnFromPositiveSample(Bag X, Tensor y) {
+            if (X.Count > 0) {
+                const float POSITIVE = 1.0f;
+                var o = Sgd(lr, ref loss, ref cc, out double err,
+                    POSITIVE, y.GetVector(), Model.Select(X));
+                if (!double.IsNaN(err) && !double.IsInfinity(err)) {
+                    loss += err;
+                    cc++;
+                    _LOG_(X, y.Id, POSITIVE, o, loss / cc);
+                } else {
+                    Console.WriteLine("NaN or Infinity detected...");
+                }
+            }
+        }
+
+        void LearnFromNegativeSample(Bag X, Tensor y) {
             if (X.Count > 0) {
                 const float NEGATIVE = 0.0f;
-                var o = Sgd(lr, ref loss, ref cc, out double err,
+                var σ = Sgd(lr, ref loss, ref cc, out double err,
                     NEGATIVE, y.GetVector(), Model.Select(X));
                 if (!double.IsNaN(err) && !double.IsInfinity(err)) {
                     loss += err;
                     cc++;
-                    _LOG_(X, y.Id, NEGATIVE, o, loss / cc);
+                    _LOG_(X, y.Id, NEGATIVE, σ, loss / cc);
                 } else {
                     Console.WriteLine("NaN or Infinity detected...");
                 }
@@ -89,52 +157,56 @@ namespace System.Ai.Trainers {
 
         double Sgd(float lr, ref double loss, ref double cc, out double err, float t,
             Complex[] y, IEnumerable<Complex[]> X) {
-            var o = Sgd(
+            var σ = Sgd(
                 y,
                 X,
                 lr,
                 t);
             err = 0d;
             if (t >= 0.5) {
-                err = -System.Math.Log(o);
+                err = σ > 0
+                    ? - System.Math.Log(σ)
+                    : 1;
             } else {
-                err = -System.Math.Log(1.0 - o);
+                err = σ >= 0 && σ < 1 
+                    ? - System.Math.Log(1.0 - σ)
+                    : 1;
             }
-            return o;
+            return σ;
         }
 
-        Bag GetContext(Bag ctx, int radius, string w) {
+        Bag GetCoOccurrences(string[] sample, int radius) {
             var X = new Bag();
             for (var n = 0; n < radius; n++) {
-                string c = Pick(ctx, w);
-                if (c != null && !c.Equals(w)) {
+                string c = GetRandom(sample);
+                if (c != null) {
                     X.Push(c);
                 }
             }
             return X;
         }
 
-        static Bag Pick(IList<Bag> data) => data[global::Random.Next(data.Count)];
-        string Pick(Bag bag, string neg) {
-            for (var i = 0; i < bag.Count; i++) {
-                var c = bag.Get(global::Random.Next(bag.Capacity));
-                if (c != null && !c.Equals(neg)) {
+        string[] GetSample() => _data[global::Random.Next(_data.Count)];
+
+        string GetRandom(string[] sample) {
+            for (var i = 0; i < sample.Length; i++) {
+                var c = sample[global::Random.Next(sample.Length)];
+                if (c != null) {
                     return c;
                 }
             }
             return null;
         }
 
-        const int VERBOSITY = 13;
-        int verbOut;
+        int _verbOut;
 
         void _LOG_(IEnumerable<string> X, string id, float t, double o, double loss) {
-            if ((verbOut >= 0 && ((verbOut % VERBOSITY) == 0))) {
-                Console.Write($"[{Thread.CurrentThread.ManagedThreadId}] ({verbOut}), Loss: {loss} : " +
+            if ((_verbOut >= 0 && ((_verbOut % VERBOSITY) == 0))) {
+                Console.Write($"[{Thread.CurrentThread.ManagedThreadId}] ({_verbOut}), Loss: {loss} : " +
                     $"p(y = {Convert.ToInt32(t)}, {id} | {string.Join<string>(", ", X)})" +
                     $" = {o}\r\n");
             }
-            Interlocked.Increment(ref verbOut);
+            Interlocked.Increment(ref _verbOut);
         }
     }
 }

@@ -19,7 +19,7 @@ namespace System.Ai {
                             if (HasCtrlBreak != null && HasCtrlBreak()) {
                                 break;
                             }
-                            trainer.Execute();
+                            trainer.Dojo();
                             Thread.Sleep(
                                 300 + global::Random.Next(70));
                         }

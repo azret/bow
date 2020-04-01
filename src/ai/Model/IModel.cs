@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 
 namespace System.Ai {
-    public interface IModel : IEnumerable<Classifier> {
+    public interface IModel : IEnumerable<Tensor> {
         int Dims { get; }
-        Classifier this[string id] { get; }
-        Classifier Push(string id);
+        Tensor this[string id] { get; }
+        Tensor Push(string id);
         void Clear();
+        Tensor[] Sort(int take = int.MaxValue);
         Complex[] Select(string id);
         IEnumerable<Complex[]> Select(IEnumerable<string> id);
     }

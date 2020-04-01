@@ -7,11 +7,14 @@
     using System.Threading;
     using Microsoft.Win32;
 
-    public interface IGdi32Controller {
+    public interface IWin32Controller : IGdi32Controller {
         void WM_WINMM(IntPtr hWnd, IntPtr wParam, IntPtr lParam);
         void WM_SHOWWINDOW(IntPtr hWnd, IntPtr wParam, IntPtr lParam);
         void WM_KEYDOWN(IntPtr hWnd, IntPtr wParam, IntPtr lParam);
         void WM_CLOSE(IntPtr hWnd, IntPtr wParam, IntPtr lParam);
+    }
+
+    public interface IGdi32Controller {
     }
 
     public class Gdi32 {
@@ -55,7 +58,7 @@
                     OnWinMM(hWnd, wParam, lParam);
                     break;
                 case WM.KEYDOWN:
-                    _controller?.WM_KEYDOWN(hWnd, wParam, lParam);
+                    (_controller as IWin32Controller)?.WM_KEYDOWN(hWnd, wParam, lParam);
                     return 0;
                 case WM.SIZE:
                 case WM.SIZING:
@@ -66,10 +69,10 @@
                     OnPaint(_onDrawFrame, _getFrame, 1, hWnd);
                     return 0;
                 case WM.CLOSE:
-                    _controller?.WM_CLOSE(hWnd, wParam, lParam);
+                    (_controller as IWin32Controller)?.WM_CLOSE(hWnd, wParam, lParam);
                     break;
                 case WM.SHOWWINDOW:
-                    _controller?.WM_SHOWWINDOW(hWnd, wParam, lParam);
+                    (_controller as IWin32Controller)?.WM_SHOWWINDOW(hWnd, wParam, lParam);
                     break;
                 case WM.DESTROY:
                     Dispose();
@@ -198,7 +201,7 @@
         private unsafe void OnWinMM(IntPtr hWnd, IntPtr wParam, IntPtr lParam) {
             User32.GetClientRect(hWnd, out RECT lprctw3);
             User32.InvalidateRect(hWnd, ref lprctw3, false);
-            _controller?.WM_WINMM(hWnd, wParam, lParam);
+            (_controller as IWin32Controller)?.WM_WINMM(hWnd, wParam, lParam);
         }
         public void Invalidate() {
             if (hWnd == IntPtr.Zero) {

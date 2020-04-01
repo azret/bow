@@ -60,13 +60,13 @@ namespace System.Ai {
             Debug.Assert(t >= 0 && t <= 1);
             Debug.Assert(lr >= 0 && lr <= 1);
             int len = X.Length;
-            float o = 0.0f;
+            float σ = 0.0f;
             for (int j = 0; j < X.Length; j++) {
-                o += y[j].Im * X[j];
+                σ += y[j].Im * X[j];
             }
-            o = (float)SigQ.f(o);
+            σ = (float)SigF.f(σ);
             if (Δ != null) {
-                float δ = lr * (t - o);
+                float δ = lr * (t - σ);
                 if (float.IsNaN(δ) || float.IsInfinity(δ)) {
                     Console.WriteLine("NaN or Infinity detected...");
                     return δ;
@@ -76,7 +76,7 @@ namespace System.Ai {
                     y[j].Im += X[j] * δ;
                 }
             }
-            return o;
+            return σ;
         }
 
         public static double Sgd(Complex[] y, IEnumerable<Complex[]> X, float lr, float t) {
@@ -84,14 +84,14 @@ namespace System.Ai {
             Debug.Assert(y != null);
             Debug.Assert(t >= 0 && t <= 1);
             float[] ΔRe = new float[y.Length];
-            var o = BinaryLogistic(
+            var σ = BinaryLogistic(
                 y,
                 Sum(X),
                 t,
                 lr,
                 ΔRe);
             Update(X, ΔRe, null);
-            return o;
+            return σ;
         }
     }
 }

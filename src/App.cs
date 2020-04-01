@@ -80,7 +80,7 @@ unsafe partial class App {
         set => Environment.CurrentDirectory = value;
     }
 
-    public System.Ai.IModel CurrentModel;
+    public System.Ai.ITrainer Session;
 
     static IDictionary<string, Func<App, string, Func<bool>, bool>> _handlers = new Dictionary<string, Func<App, string, Func<bool>, bool>>();
 
@@ -193,7 +193,7 @@ unsafe partial class App {
 
     #endregion
 
-    public Thread StartWin32UI<T>(IGdi32Controller controller, Gdi32<T>.DrawFrame onDrawFrame, Func<T> onGetFrame, string title,
+    public static Thread StartWin32UI<T>(IGdi32Controller controller, Gdi32<T>.DrawFrame onDrawFrame, Func<T> onGetFrame, string title,
         Color bgColor, Icon hIcon = null, Size? size = null)
         where T : class {
         Gdi32<T> hWnd = null;

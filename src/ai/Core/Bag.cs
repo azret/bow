@@ -200,10 +200,10 @@ namespace System.Ai.Collections {
 
     public class Bag : Bag<Dot>, IEnumerable<string>, ICollection<string> {
         public Bag()
-            : base(Dot.Factory) {
+            : base(Dot.Create) {
         }
         public Bag(string id, int hashCode)
-            : base(id, hashCode, Dot.Factory) {
+            : base(id, hashCode, Dot.Create) {
         }
         bool ICollection<string>.IsReadOnly => false;
         public void Add(string id) {
