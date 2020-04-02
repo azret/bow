@@ -50,6 +50,7 @@
     <Compile Include="ai\Core\Bag.cs" />
     <Compile Include="ai\Core\Dot.cs" />
     <Compile Include="ai\Core\Hash.cs" />
+    <Compile Include="ai\Iris.cs" />
     <Compile Include="ai\Model\IModel.cs" />
     <Compile Include="ai\Core\ITensor.cs" />
     <Compile Include="ai\Model\ITrainer.cs" />
@@ -65,6 +66,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="include\System.IO\Tools.cs" />
     <Compile Include="viz\Curves.cs" />
     <Compile Include="include\Math\Envelopes.cs" />
     <Compile Include="include\Microsoft.Win32\Mic32.cs" />
@@ -94,8 +96,6 @@
       <CustomToolNamespace>Properties</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="include\System.IO\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

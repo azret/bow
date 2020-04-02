@@ -55,8 +55,8 @@ namespace System.Ai {
             using (var stream = new FileStream(outputFilePath, FileMode.Create, FileAccess.Write, FileShare.None)) {
                 int i = 0;
                 string s;
-                s = $"#CBOW " +
-                    $"| {dims}\r\n";
+                s = $"ML " +
+                    $"| {dims}\r\n\r\n";
                 byte[] bytes = Encoding.UTF8.GetBytes(s);
                 stream.Write(bytes,
                     0, bytes.Length);

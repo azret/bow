@@ -18,7 +18,7 @@ namespace System.Ai.Trainers {
             Model = model;
         }
 
-        public void Build(string dir) {
+        public void Build() {
             var data = new List<string[]>() {
                 new string[] {
                     "white",
@@ -103,9 +103,9 @@ namespace System.Ai.Trainers {
         double loss = 0,
             cc = 0;
 
-        double ITrainer.Loss => loss / cc;
+        string ITrainer.Progress => $"Loss: {(loss / cc)}";
 
-        void ITrainer.Dojo() {
+        void ITrainer.Fit() {
             for (var k = 0; k < POSITIVES; k++) {
                 var Sample = GetSample();
                 foreach (var s in Sample) {
@@ -116,7 +116,7 @@ namespace System.Ai.Trainers {
                         LearnFromPositiveSample(GetCoOccurrences(Sample, RADIUS), w);
                         for (var h = 0; h < NEGATIVES; h++) {
                             var Prime = GetSample();
-                            if (Prime != null & Prime != Sample) {
+                            if (Prime != null && Prime != Sample) {
                                 LearnFromNegativeSample(GetCoOccurrences(Prime, RADIUS), w);
                             }
                         }

@@ -34,11 +34,11 @@
                 β[i].Im = ((global::Random.Next() & 0xFFFF) / (float)(0xFFFF)) - 0.5f;
 #else
                 if (i % 2 == 0) {
-                    Vector[i].Re = 0.5f;
                     Vector[i].Im = 0.5f;
+                    Vector[i].Re = 0.5f;
                 } else {
-                    Vector[i].Re = -0.5f;
                     Vector[i].Im = -0.5f;
+                    Vector[i].Re = -0.5f;
                 }
 #endif
             }

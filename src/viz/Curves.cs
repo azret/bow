@@ -22,7 +22,7 @@ unsafe partial class Curves {
             DrawClassifier(w, Colors[i % Colors.Length]);
             i++;
         }
-        DrawLoss(g, r, W.Loss);
+        DrawLoss(g, r, W.Progress);
         DrawPhase(g, r, t);
     }
 
@@ -72,7 +72,7 @@ unsafe partial class Curves {
             var dots = new List<PointF>();
             var pen = new Pen(brush.Color, 2f);
             for (int i = 0; i < F.Length; i++) {
-                var ampl = SigF.f((F[i].Re + F[i].Im) * 0.5) - 0.5;
+                var ampl = SigF.f((F[i].Im + F[i].Re) * 0.5) - 0.5;
                 // var ampl = ((F[i].Re + F[i].Im) / 2f);
                 //var ampl = Tanh.f((F[i].Re + F[i].Im) / 2f);
                 if (ampl < -1) {
@@ -107,8 +107,8 @@ unsafe partial class Curves {
         g.PixelOffsetMode = PixelOffsetMode;
     }
 
-    static void DrawLoss(Graphics g, RectangleF r, double loss) {
-        string szLoss = $"Loss: {loss}";
+    static void DrawLoss(Graphics g, RectangleF r, string loss) {
+        string szLoss = $"{loss}";
         if (szLoss != null) {
             var sz = g.MeasureString(szLoss, Gdi32.Font);
             g.DrawString(
