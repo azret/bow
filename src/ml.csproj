@@ -61,6 +61,9 @@
     <Compile Include="fit\Verify.cs" />
     <Compile Include="fit\Exec.cs" />
     <Compile Include="ai\Core\Logistic.cs" />
+    <Compile Include="include\System.Text\Orthography\CSharp.cs" />
+    <Compile Include="include\System.Text\Orthography\English.cs" />
+    <Compile Include="include\System.Text\Orthography\Latin.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -72,7 +75,7 @@
     <Compile Include="include\Microsoft.Win32\Mic32.cs" />
     <Compile Include="include\Microsoft.Win32\Gdi32.cs" />
     <Compile Include="include\Microsoft.Win32\Win32.cs" />
-    <Compile Include="include\System.Text\Orthography.cs" />
+    <Compile Include="include\System.Text\Orthography\Orthography.cs" />
     <Compile Include="include\System.Text\Parse.cs" />
     <Compile Include="App.cs" />
     <Compile Include="include\Math\Complex.cs" />

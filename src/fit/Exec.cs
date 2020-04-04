@@ -26,9 +26,9 @@ unsafe partial class Exec {
         Tensor[] sort;
         var cbow = new ContinuousBagOfWords(new System.Ai.Model(CAPACITY, DIMS),
             dir,
-            "*.la",
+            "*.cs",
             SearchOption.AllDirectories,
-            Latin.Instance);
+            CSharp.Instance);
         if (File.Exists(outputFileName)) {
             foreach (var t in Model.Read(outputFileName)) {
                 var y = cbow.Model.Push(t.Id);
