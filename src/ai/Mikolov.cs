@@ -68,9 +68,10 @@ namespace System.Ai.Trainers {
                     }
                 }
             }
+            Console.WriteLine($"Done.");
         }
 
-        static double PowScale(double score) {
+        public static double PowScale(double score) {
             const double POW = 0.7351;
             const int Xmax = 739;
             if (score <= 1) {

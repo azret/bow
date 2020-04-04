@@ -2,9 +2,54 @@ using System;
 using System.Ai;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using Microsoft.Gdi32;
 
 unsafe partial class Curves {
+    public static void DrawCounts(Graphics g, RectangleF r, float t, Tensor[] W) {
+        g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+        g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+        DrawPaper(g, r);
+
+        var X = W.Take(1024 * 3).Select(f => f.GetScore()).ToArray();
+
+        DrawVector(g, r, Norm(X), Pens.OrangeRed.Color);
+        DrawVector(g, r, Norm(PowScale(X)), Pens.DarkRed.Color);
+        DrawVector(g, r, Norm(LogScale(X)), Pens.DarkBlue.Color);
+
+        DrawPhase(g, r, t);
+    }
+
+    static float[] PowScale(float[] X) {
+        var Pow = new float[X.Length];
+        for (int i = 0; i < Pow.Length; i++) {
+            Pow[i] = (float)Math.Pow(X[i], 0.1);
+        }
+        return Pow;
+    }
+
+    static float[] Norm(float[] X) {
+        var Scale = new float[X.Length];
+        float norm = 0;
+        for (int i = 0; i < Scale.Length; i++) {
+            Scale[i] = X[i];
+            norm = Math.Max(Math.Abs(Scale[i]),
+                norm);
+        }
+        for (int i = 0; i < Scale.Length; i++) {
+            Scale[i] = Scale[i] / norm;
+        }
+        return Scale;
+    }
+
+    static float[] LogScale(float[] X) {
+        var Scale = new float[X.Length];
+        for (int i = 0; i < Scale.Length; i++) {
+            Scale[i] = (float)Math.Log(X[i]);
+        }
+        return Scale;
+    }
+
     public static void DrawCurves(Graphics g, RectangleF r, float t, Tuple<Tensor[], string> W) {
         g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
         g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
@@ -55,6 +100,52 @@ unsafe partial class Curves {
                     new PointF(0, y),
                     new PointF(r.Width, y));
             }
+        }
+        g.PixelOffsetMode = PixelOffsetMode;
+    }
+
+    private static void DrawVector(Graphics g,
+        RectangleF r,
+        float[] F,
+        Color color) {
+        float linf(float val, float from, float to) {
+            return (val * (to / from));
+        }
+        var PixelOffsetMode = g.PixelOffsetMode;
+        if (F != null) {
+            g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+            var dots = new List<PointF>();
+            var pen = new Pen(color, 2f);
+            for (int i = 0; i < F.Length; i++) {
+                var ampl = F[i];
+                if (ampl < -1) {
+                    ampl = -1;
+                }
+                if (ampl > +1) {
+                    ampl = +1;
+                }
+                if (ampl < -1 || ampl > +1) {
+                    throw new IndexOutOfRangeException();
+                }
+                float m = r.Height / 2f;
+                float y
+                    = linf(-(float)ampl, 1f, m) + m;
+                float x
+                    = linf(i, F.Length - 1, r.Width);
+                dots.Add(new PointF(x, y));
+            }
+            PointF[] pts = dots.ToArray();
+            if (pts.Length > 1) {
+                g.DrawCurve(
+                    pen,
+                    pts);
+            }
+            // foreach (PointF p in pts) {
+            //     float m = r.Height / 2f;
+            //     g.FillEllipse(pen.Brush, p.X - 3,
+            //         p.Y - 3, 7, 7);
+            // }
+            pen.Dispose();
         }
         g.PixelOffsetMode = PixelOffsetMode;
     }

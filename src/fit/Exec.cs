@@ -3,13 +3,8 @@ using System.Ai;
 using System.Ai.Trainers;
 using System.Drawing;
 using System.IO;
-using System.Text.Orthography;
 
 unsafe partial class Exec {
-    const int CAPACITY = 1048576,
-        GENS = (int)1e6,
-             DIMS = 73;
-
     public static bool Search(
         App app,
         string cliScript,
@@ -18,17 +13,46 @@ unsafe partial class Exec {
         return false;
     }
 
+    public static bool Count(
+        App app,
+        Args args,
+        Func<bool> IsTerminated) {
+        string outputFileName = Path.ChangeExtension(args.SearchPath.TrimEnd('\\'), ".ml");
+
+        Tensor[] sort;
+
+        var cbow = new ContinuousBagOfWords(new System.Ai.Model(args.Capacity, args.Dims),
+            args.SearchPath,
+            args.SearchPattern,
+            args.SearchOption,
+            args.Orthography);
+
+        cbow.Build();
+
+        sort = cbow.Model.Sort();
+
+        App.StartWin32UI(null,
+                       Curves.DrawCounts, () =>
+                            sort,
+                       $"{args.SearchPath} - (Distribution)",
+                            Color.White,
+                       Properties.Resources.Oxygen,
+                       new Size(623, 400));
+
+        return false;
+    }
+
     public static bool Fit(
         App app,
-        string dir,
+        Args args,
         Func<bool> IsTerminated) {
-        string outputFileName = Path.ChangeExtension(dir.TrimEnd('\\'), ".ml");
+        string outputFileName = Path.ChangeExtension(args.SearchPath.TrimEnd('\\'), ".ml");
         Tensor[] sort;
-        var cbow = new ContinuousBagOfWords(new System.Ai.Model(CAPACITY, DIMS),
-            dir,
-            "*.cs",
-            SearchOption.AllDirectories,
-            CSharp.Instance);
+        var cbow = new ContinuousBagOfWords(new System.Ai.Model(args.Capacity, args.Dims),
+            args.SearchPath,
+            args.SearchPattern,
+            args.SearchOption,
+            args.Orthography);
         if (File.Exists(outputFileName)) {
             foreach (var t in Model.Read(outputFileName)) {
                 var y = cbow.Model.Push(t.Id);
@@ -54,45 +78,13 @@ unsafe partial class Exec {
                        new Size(623, 400));
 
         Trainer.Fit(app.Session,
-            GENS,
+            args.Gens,
             IsTerminated);
         Model.Write(outputFileName,
             sort,
             app.Session.Model.Dims);
         Model.Dump(sort, app.Session.Model.Dims,
             Path.ChangeExtension(outputFileName, ".md"));
-        return false;
-    }
-
-    public static bool Load(
-        App app,
-        string dir,
-        Func<bool> IsTerminated) {
-        string outputFileName = Path.ChangeExtension(dir.TrimEnd('\\'), ".ml");
-        Tensor[] sort;
-        var cbow = new ContinuousBagOfWords(new System.Ai.Model(CAPACITY, DIMS),
-            dir,
-            "*.la",
-            SearchOption.AllDirectories,
-            Latin.Instance);
-        if (File.Exists(outputFileName)) {
-            foreach (var t in Model.Read(outputFileName)) {
-                var y = cbow.Model.Push(t.Id);
-                y.SetScore(t.GetScore());
-                y.SetVector(
-                    t.GetVector());
-            }
-            app.Session = cbow;
-            sort = app.Session.Model.Sort();
-            App.StartWin32UI(null,
-                           Curves.DrawCurves, () =>
-                                new Tuple<Tensor[], string>(sort,
-                                    app.Session.Progress),
-                           $"{outputFileName} - (Continuous Bag of Words w/ Negative Sampling)",
-                                Color.White,
-                           Properties.Resources.Oxygen,
-                           new Size(623, 400));
-        }
         return false;
     }
 }

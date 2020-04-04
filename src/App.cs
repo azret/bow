@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Orthography;
 using System.Threading;
 using Microsoft.Gdi32;
 using Microsoft.Win32;
@@ -31,6 +32,12 @@ unsafe partial class App {
                 }
                 return global::Verify.Run(app, app.CurrentDirectory, IsTerminated);
             };
+
+        Args args = new Args(
+            CSharp.Instance,
+            null,
+            "*.cs;*.la");
+
         _handlers["--fit"] = (
             App app,
             string cliScript,
@@ -41,19 +48,19 @@ unsafe partial class App {
                 if (Directory.Exists(dir)) {
                     app.CurrentDirectory = dir;
                 }
-                return global::Exec.Fit(app, app.CurrentDirectory, IsTerminated);
+                return global::Exec.Fit(app, args.Create(app.CurrentDirectory), IsTerminated);
             };
-        _handlers["--load"] = (
+        _handlers["--count"] = (
             App app,
             string cliScript,
             Func<bool> IsTerminated) => {
                 cliScript = cliScript
-                    .Replace("--load", "").Replace("load", "");
+                    .Replace("--count", "").Replace("count", "");
                 var dir = cliScript.Trim();
                 if (Directory.Exists(dir)) {
                     app.CurrentDirectory = dir;
                 }
-                return global::Exec.Load(app, app.CurrentDirectory, IsTerminated);
+                return global::Exec.Count(app, args.Create(app.CurrentDirectory), IsTerminated);
             };
         _handlers["--touch"] = (
             App app,

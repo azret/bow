@@ -58,6 +58,7 @@
     <Compile Include="ai\Model\Search.cs" />
     <Compile Include="ai\Core\Tensor.cs" />
     <Compile Include="ai\Model\Trainer.cs" />
+    <Compile Include="fit\Args.cs" />
     <Compile Include="fit\Verify.cs" />
     <Compile Include="fit\Exec.cs" />
     <Compile Include="ai\Core\Logistic.cs" />
