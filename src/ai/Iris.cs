@@ -180,7 +180,7 @@
 
         public string Progress => $"Accuracy: {(_accuracy)}%";
 
-        void ITrainer.Fit() {
+        void ITrainer.Fit(Func<bool> HasCtrlBreak) {
             for (var k = 0; k < POSITIVES; k++) {
                 var Yes = GetRandomSample();
                 var y = Model[Yes.Item2];

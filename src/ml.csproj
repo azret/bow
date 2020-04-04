@@ -47,10 +47,10 @@
     <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ai\Mikolov.cs" />
     <Compile Include="ai\Core\Bag.cs" />
     <Compile Include="ai\Core\Dot.cs" />
     <Compile Include="ai\Core\Hash.cs" />
-    <Compile Include="ai\Iris.cs" />
     <Compile Include="ai\Model\IModel.cs" />
     <Compile Include="ai\Core\ITensor.cs" />
     <Compile Include="ai\Model\ITrainer.cs" />
@@ -58,8 +58,8 @@
     <Compile Include="ai\Model\Search.cs" />
     <Compile Include="ai\Core\Tensor.cs" />
     <Compile Include="ai\Model\Trainer.cs" />
-    <Compile Include="ai\ff103.cs" />
-    <Compile Include="Exec.cs" />
+    <Compile Include="fit\Verify.cs" />
+    <Compile Include="fit\Exec.cs" />
     <Compile Include="ai\Core\Logistic.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -67,13 +67,13 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="include\System.IO\Tools.cs" />
-    <Compile Include="viz\Curves.cs" />
+    <Compile Include="draw\Curves.cs" />
     <Compile Include="include\Math\Envelopes.cs" />
     <Compile Include="include\Microsoft.Win32\Mic32.cs" />
     <Compile Include="include\Microsoft.Win32\Gdi32.cs" />
     <Compile Include="include\Microsoft.Win32\Win32.cs" />
     <Compile Include="include\System.Text\Orthography.cs" />
-    <Compile Include="include\System.Text\Text.cs" />
+    <Compile Include="include\System.Text\Parse.cs" />
     <Compile Include="App.cs" />
     <Compile Include="include\Math\Complex.cs" />
     <Compile Include="include\Math\IFunc.cs" />

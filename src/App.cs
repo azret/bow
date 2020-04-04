@@ -19,6 +19,18 @@ unsafe partial class App {
     static IDictionary<string, Func<App, string, Func<bool>, bool>> _handlers = new Dictionary<string, Func<App, string, Func<bool>, bool>>();
 
     static void InitCliHandlers() {
+        _handlers["--verify"] = (
+            App app,
+            string cliScript,
+            Func<bool> IsTerminated) => {
+                cliScript = cliScript
+                    .Replace("--verify", "").Replace("verify", "");
+                var dir = cliScript.Trim();
+                if (Directory.Exists(dir)) {
+                    app.CurrentDirectory = dir;
+                }
+                return global::Verify.Run(app, app.CurrentDirectory, IsTerminated);
+            };
         _handlers["--fit"] = (
             App app,
             string cliScript,
@@ -29,19 +41,19 @@ unsafe partial class App {
                 if (Directory.Exists(dir)) {
                     app.CurrentDirectory = dir;
                 }
-                return global::Exec.ff103(app, app.CurrentDirectory, IsTerminated);
+                return global::Exec.Fit(app, app.CurrentDirectory, IsTerminated);
             };
-        _handlers["--iris"] = (
+        _handlers["--load"] = (
             App app,
             string cliScript,
             Func<bool> IsTerminated) => {
                 cliScript = cliScript
-                    .Replace("--iris", "").Replace("iris", "");
+                    .Replace("--load", "").Replace("load", "");
                 var dir = cliScript.Trim();
                 if (Directory.Exists(dir)) {
                     app.CurrentDirectory = dir;
                 }
-                return global::Exec.Iris(app, app.CurrentDirectory, IsTerminated);
+                return global::Exec.Load(app, app.CurrentDirectory, IsTerminated);
             };
         _handlers["--touch"] = (
             App app,

@@ -105,7 +105,7 @@ namespace System.Ai.Trainers {
 
         string ITrainer.Progress => $"Loss: {(loss / cc)}";
 
-        void ITrainer.Fit() {
+        void ITrainer.Fit(Func<bool> HasCtrlBreak) {
             for (var k = 0; k < POSITIVES; k++) {
                 var Sample = GetSample();
                 foreach (var s in Sample) {

@@ -3,6 +3,7 @@
 namespace System.Ai {
     public interface IModel : IEnumerable<Tensor> {
         int Dims { get; }
+        int Count { get; }
         Tensor this[string id] { get; }
         Tensor Push(string id);
         void Clear();

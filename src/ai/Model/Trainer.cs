@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace System.Ai {
     public static class Trainer {
-        public static void Run(this ITrainer trainer, int gens,
+        public static void Fit(this ITrainer trainer, int gens,
             Func<bool> HasCtrlBreak) {
             if (trainer == null) {
                 throw new ArgumentNullException(nameof(trainer));
@@ -19,9 +19,9 @@ namespace System.Ai {
                             if (HasCtrlBreak != null && HasCtrlBreak()) {
                                 break;
                             }
-                            trainer.Fit();
+                            trainer.Fit(HasCtrlBreak);
                             Thread.Sleep(
-                                300 + global::Random.Next(70));
+                                70 + global::Random.Next(70));
                         }
                     } finally {
                         Interlocked.Decrement(ref numberOfRunningThreads);

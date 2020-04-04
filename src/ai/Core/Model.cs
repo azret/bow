@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace System.Ai {
@@ -14,6 +15,7 @@ namespace System.Ai {
             _hash = new Hash<Tensor>((id, hashCode) => new Tensor(id, hashCode, Dims, true), capacity);
         }
         public int Dims { get; }
+        public int Count => _hash.Count;
         public void Clear() => _hash.Clear();
         public Tensor[] Sequence() => Hash<Tensor>.Sequence(_hash);
         public IEnumerator<Tensor> GetEnumerator() => _hash.GetEnumerator();
@@ -24,7 +26,13 @@ namespace System.Ai {
             Tensor[] sort = Sequence();
             Array.Sort(
                 sort,
-                (a, b) => -a.CompareTo(b));
+                (a, b) => {
+                    int c = -a.CompareTo(b);
+                    if (c == 0) {
+                        c = a.Id.CompareTo(b.Id);
+                    }
+                    return c;
+                });
             if (take < sort.Length) {
                 Array.Resize(ref sort, take);
             }
@@ -50,6 +58,142 @@ namespace System.Ai {
     }
 
     public partial class Model {
+        static void WriteBytes(FileStream file, byte[] value) => file.Write(value, 0, value.Length);
+        static void WriteLong(FileStream file, long value) => WriteBytes(file, BitConverter.GetBytes(value));
+        static void WriteInt(FileStream file, int value) => WriteBytes(file, BitConverter.GetBytes(value));
+        static void WriteShort(FileStream file, short value) => WriteBytes(file, BitConverter.GetBytes(value));
+        static void WriteChars(FileStream file, string value) => WriteBytes(file, Encoding.ASCII.GetBytes(value));
+        static void WriteFloat(FileStream file, float value) => WriteBytes(file, BitConverter.GetBytes(value));
+        public static void Write(string outputFilePath, IEnumerable<Tensor> data, int dims) {
+            Console.Write($"\r\nSaving: {outputFilePath}...\r\n");
+            using (FileStream file = System.IO.File.Create(outputFilePath)) {
+                WriteChars(file, "RIFF");
+                long size = 0;
+                WriteLong(file, size);
+                WriteChars(file, "ML");
+                if (dims > 1024 || dims < 0) {
+                    throw new InvalidDataException();
+                }
+                int count = 0;
+                WriteInt(file, count);
+                WriteInt(file, dims);
+                foreach (var t in data) {
+                    if (t.Id != null && t.Id.Length > 256) {
+                        throw new InvalidDataException();
+                    }
+                    file.WriteByte((byte)'§');
+                    if (t.Id != null && t.Id.Length > 0) {
+                        var buff
+                            = Encoding.UTF8.GetBytes(t.Id);
+                        WriteInt(file, buff.Length);
+                        WriteBytes(file, buff);
+                    } else {
+                        WriteInt(file, 0);
+                    }
+                    WriteFloat(file, t.GetScore());
+                    var vec = t.GetVector();
+                    if (vec == null || vec.Length == 0) {
+                        if (0 != dims) {
+                            throw new InvalidDataException();
+                        }
+                        WriteInt(file, 0);
+                    } else {
+                        if (vec.Length != dims || vec.Length > 1024) {
+                            throw new InvalidDataException();
+                        }
+                        WriteInt(file, vec.Length);
+                        for (var j = 0; j < vec.Length; j++) {
+                            WriteFloat(file, vec[j].Re);
+                            WriteFloat(file, vec[j].Im);
+                        }
+                    }
+                    count++;
+                }
+                size = file.Position;
+                file.Seek(14,
+                    SeekOrigin.Begin);
+                WriteInt(file, count);
+                file.Seek(4,
+                    SeekOrigin.Begin);
+                WriteLong(file, size);
+                file.Seek(0,
+                    SeekOrigin.End);
+            }
+            Console.Write("\r\nReady!\r\n");
+        }
+        static float ReadFloat(FileStream file) {
+            var bytes = new byte[Marshal.SizeOf<float>()];
+            file.Read(bytes, 0, Marshal.SizeOf<float>());
+            return BitConverter.ToSingle(bytes, 0);
+        }
+        static int ReadInt(FileStream file) {
+            var bytes = new byte[Marshal.SizeOf<int>()];
+            file.Read(bytes, 0, Marshal.SizeOf<int>());
+            return BitConverter.ToInt32(bytes, 0);
+        }
+        static short ReadShort(FileStream file) {
+            var bytes = new byte[Marshal.SizeOf<short>()];
+            file.Read(bytes, 0, Marshal.SizeOf<short>());
+            return BitConverter.ToInt16(bytes, 0);
+        }
+        static long ReadLong(FileStream file) {
+            var bytes = new byte[Marshal.SizeOf<long>()];
+            file.Read(bytes, 0, Marshal.SizeOf<long>());
+            return BitConverter.ToInt64(bytes, 0);
+        }
+        static string ReadChars(FileStream file, int len) {
+            var bytes = new byte[len];
+            file.Read(bytes, 0, len);
+            return Encoding.ASCII.GetString(bytes);
+        }
+        public static IEnumerable<Tensor> Read(string fileName) {
+            using (var file = System.IO.File.Open(fileName, FileMode.Open, FileAccess.Read)) {
+                if (ReadChars(file, 4) != "RIFF") {
+                    throw new InvalidDataException();
+                }
+                long nFileLength = ReadLong(file);
+                if (ReadChars(file, 2) != "ML") {
+                    throw new InvalidDataException();
+                }
+                int nCount = ReadInt(file),
+                        dims = ReadInt(file);
+                while (file.Position < file.Length) {
+                    byte cSection = (byte)file.ReadByte();
+                    switch (cSection) {
+                        case (byte)'§':
+                            var len = ReadInt(file);
+                            if (len > 256 || len < 0) {
+                                throw new InvalidDataException();
+                            }
+                            string id = null;
+                            if (len > 0) {
+                                var bytes = new byte[len];
+                                file.Read(bytes,
+                                    0, len);
+                                id = Encoding.UTF8.GetString(bytes);
+                            }
+                            var score = ReadFloat(file);
+                            var n = ReadInt(file);
+                            if (n != dims) {
+                                throw new InvalidDataException();
+                            }
+                            Complex[] vec = new Complex[n];
+                            for (var j = 0; j < vec.Length; j++) {
+                                vec[j].Re = ReadFloat(file);
+                                vec[j].Im = ReadFloat(file);
+                            }
+                            var t = new Tensor(id,
+                                Dot.ComputeHashCode(id), dims, false);
+                            t.SetScore(score);
+                            t.SetVector(vec);
+                            yield return t;
+                            break;
+                        default:
+                            throw new InvalidDataException();
+                    }
+                }
+            }
+        }
         public static void Dump(IEnumerable<Tensor> Model, int dims, string outputFilePath) {
             Console.Write($"\r\nSaving: {outputFilePath}...\r\n");
             using (var stream = new FileStream(outputFilePath, FileMode.Create, FileAccess.Write, FileShare.None)) {
@@ -61,13 +205,13 @@ namespace System.Ai {
                 stream.Write(bytes,
                     0, bytes.Length);
                 foreach (Tensor it in Model) {
-                    if (it == null) {
+                    if (it == null || it.GetScore() <= 1) {
                         continue;
                     }
                     var sz = new StringBuilder();
                     Complex[] w = it.GetVector();
                     if (w != null) {
-                        for (var j = 0; j < w.Length; j++) {
+                        for (var j = 0; j < Math.Min(w.Length, 7); j++) {
                             if (sz.Length > 0) {
                                 sz.Append(" ");
                             }
@@ -88,155 +232,5 @@ namespace System.Ai {
             }
             Console.Write("\r\nReady!\r\n");
         }
-        // public static Matrix<Word> LoadFromFile(string inputFilePath, int size, out string fmt, out int dims) {
-        //     Matrix<Word> Model = new Matrix<Word>((id, hashCode) => new Word(id, hashCode), size);
-        //     fmt = null;
-        //     Console.Write($"\r\nReading: {inputFilePath}...\r\n\r\n");
-        //     string[] lines = File.ReadAllLines(inputFilePath);
-        //     dims = 0;
-        //     for (int i = 0; i < lines.Length; i++) {
-        //         string l = lines[i];
-        //         if (string.IsNullOrWhiteSpace(l)) {
-        //             continue;
-        //         }
-        //         if (i == 0) {
-        //             ParseHeader(l, out fmt, out dims);
-        //         } else {
-        //             ParseWord(Model, fmt, l, dims);
-        //         }
-        //     }
-        //     Console.Write($"Ready!\r\n\r\n");
-        //     return Model;
-        // }
-        // static void ParseHeader(string sz, out string fmt, out int dims) {
-        //     dims = -1;
-        //     int i = 0, wordStart = i;
-        //     while (i < sz.Length && (sz[i] != ' ' && sz[i] != '|' && sz[i] != '⁞')) {
-        //         i++;
-        //     }
-        //     fmt = sz.Substring(wordStart, i - wordStart);
-        //     while (i < sz.Length && (sz[i] == ' '
-        //             || sz[i] == '|' || '⁞' == sz[i])) {
-        //         i++;
-        //     }
-        //     if (fmt != "CLI" && fmt != "MEL" && fmt != "CBOW" && fmt != "MIDI") {
-        //         throw new InvalidDataException();
-        //     }
-        //     int section = 0;
-        //     for (; ; ) {
-        //         wordStart = i;
-        //         while (i < sz.Length && (sz[i] == '-' || sz[i] == '+' || sz[i] == 'E'
-        //                 || sz[i] == '.' || char.IsDigit(sz[i]))) {
-        //             i++;
-        //         }
-        //         if (i > wordStart) {
-        //             string num = sz.Substring(wordStart, i - wordStart);
-        //             switch (section) {
-        //                 case 0:
-        //                     dims = int.Parse(num);
-        //                     break;
-        //                 default:
-        //                     throw new InvalidDataException();
-        //             }
-        //             while (i < sz.Length && (sz[i] == ' ' || sz[i] == '|' || '⁞' == sz[i])) {
-        //                 if (sz[i] == '|' || sz[i] == '⁞') {
-        //                     section++;
-        //                 }
-        //                 i++;
-        //             }
-        //         } else {
-        //             break;
-        //         }
-        //     }
-        // }
-        // static void ParseWord(Matrix<Word> Model, string fmt, string sz, int dims) {
-        //     int i = 0, wordStart = i;
-        //     while (i < sz.Length && (sz[i] != '\t' && sz[i] != ' '
-        //                     && sz[i] != '•' && sz[i] != '|' && sz[i] != '⁞')) {
-        //         i++;
-        //     }
-        //     string w = sz.Substring(wordStart, i - wordStart);
-        //     while (i < sz.Length && (sz[i] == '\t' || sz[i] == ' '
-        //                     || sz[i] == '•' || sz[i] == '|' || sz[i] == '⁞')) {
-        //         i++;
-        //     }
-        //     Word vec;
-        //     if (fmt == "CBOW" || fmt == "MEL" || fmt == "CLI") {
-        //         vec = Model.Push(w);
-        //         if (vec.Vector == null) {
-        //             vec.Alloc(dims);
-        //         }
-        //     } else {
-        //         throw new InvalidDataException();
-        //     }
-        //     int section = 0,
-        //             n = 0;
-        //     if (fmt == "MIDI") {
-        //         n = dims;
-        //     }
-        //     for (; ; ) {
-        //         wordStart = i;
-        //         while (i < sz.Length && (sz[i] == '±' || sz[i] == '-' || sz[i] == '+' || sz[i] == 'E'
-        //                 || sz[i] == 'A' || sz[i] == 'B' || sz[i] == 'C'
-        //                 || sz[i] == 'D' || sz[i] == 'F' || sz[i] == 'G'
-        //                 || sz[i] == '#'
-        //                 || sz[i] == '.' || char.IsDigit(sz[i]))) {
-        //             i++;
-        //         }
-        //         var ImSign = +1;
-        //         int len = (i - wordStart) - 1;
-        //         while (wordStart + len > 0 && wordStart + len < sz.Length
-        //                 && (sz[wordStart + len] == '-' || sz[wordStart + len] == '+' || sz[wordStart + len] == '±')) {
-        //             if (sz[wordStart + len] == '-') {
-        //                 ImSign = -1;
-        //             }
-        //             len--;
-        //         }
-        //         string Re = sz.Substring(wordStart, len + 1);
-        //         string Im = null;
-        //         if (i < sz.Length && (sz[i] == 'i')) {
-        //             i++;
-        //             wordStart = i;
-        //             while (i < sz.Length && (sz[i] == '-' || sz[i] == '+' || sz[i] == 'E'
-        //                     || sz[i] == 'A' || sz[i] == 'B' || sz[i] == 'C'
-        //                     || sz[i] == 'D' || sz[i] == 'F' || sz[i] == 'G'
-        //                     || sz[i] == '#'
-        //                     || sz[i] == '.' || char.IsDigit(sz[i]))) {
-        //                 i++;
-        //             }
-        //             Im = sz.Substring(wordStart, i - wordStart);
-        //         }
-        //         if (!string.IsNullOrWhiteSpace(Re)) {
-        //             switch (section) {
-        //                 case 0:
-        //                     vec.Re = float.Parse(Re);
-        //                     if (!string.IsNullOrWhiteSpace(Im)) {
-        //                         vec.Im = ImSign * float.Parse(Im);
-        //                     }
-        //                     break;
-        //                 case 1:
-        //                     vec.Vector[n].Re = float.Parse(Re);
-        //                     if (!string.IsNullOrWhiteSpace(Im)) {
-        //                         vec.Vector[n].Im = ImSign * float.Parse(Im);
-        //                     }
-        //                     n++;
-        //                     break;
-        //                 default:
-        //                     throw new InvalidDataException();
-        //             }
-        //             while (i < sz.Length && (sz[i] == '\t' || sz[i] == ' ' || sz[i] == '•' || sz[i] == '|' || sz[i] == '⁞')) {
-        //                 if (sz[i] == '•' || sz[i] == '|' || sz[i] == '⁞') {
-        //                     section++;
-        //                 }
-        //                 i++;
-        //             }
-        //         } else /* End of Line */ {
-        //             if (n != dims) {
-        //                 throw new InvalidDataException();
-        //             }
-        //             break;
-        //         }
-        //     }
-        // }
     }
 }
