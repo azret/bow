@@ -109,8 +109,6 @@ unsafe partial class App {
             }
             while (!HasCtrlBreak) {
                 Console.Write($"\r\n{app.CurrentDirectory}>");
-                Console.Title = Path.GetFileNameWithoutExtension(
-                    typeof(App).Assembly.Location);
                 cliScript = Console.ReadLine();
                 if (cliScript == null) {
                     HasCtrlBreak = false;

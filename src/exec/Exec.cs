@@ -70,47 +70,44 @@ unsafe partial class Exec {
         App app,
         Args args,
         Func<bool> IsTerminated) {
-         
-        var cbow = new ContinuousBagOfWords(new System.Ai.Model(args.Capacity, args.Dims),
+
+        var model = new ContinuousBagOfWords(new System.Ai.Model(args.Capacity, args.Dims),
             args.SearchPath,
             args.SearchPattern,
             args.SearchOption,
-            args.Orthography);
+            args.Orthography,
+            args.lr,
+            args.Negatives,
+            args.Window);
+
         if (File.Exists(args.OutputFileName)) {
-            foreach (var t in Model.Read(args.OutputFileName)) {
-                var y = cbow.Model.Push(t.Id);
-                y.SetScore(t.GetScore());
-                y.SetVector(
-                    t.GetVector());
-            }
-            cbow.CreateNegativeDistribution((int)1e7);
+            model.Load(args.OutputFileName);
         } else {
-            cbow.Build();
-            cbow.CreateNegativeDistribution((int)1e7);
+            model.Build();
         }
 
-        app.CurrentModel = cbow.Model;
+        app.CurrentModel = model.Model;
 
-        var sort = cbow.Model.Sort();
+        var sort = model.Model.Sort();
 
         App.StartWin32UI(null,
                        Curves.DrawCurves, () => 
                             new Tuple<Tensor[], string>(sort,
-                                cbow.Progress),
+                                model.Progress),
                        $"{args.OutputFileName} - Continuous Bag of Words w/ Negative Sampling",
                             Color.White,
                        Properties.Resources.Oxygen,
                        new Size(623, 400));
 
-        Trainer.Fit(cbow,
+        Trainer.Fit(model,
             args.Gens,
             IsTerminated);
 
         Model.Write(args.OutputFileName,
             sort,
-            cbow.Model.Dims);
+            model.Model.Dims);
 
-        Model.Dump(sort, cbow.Model.Dims,
+        Model.Dump(sort, model.Model.Dims,
             Path.ChangeExtension(args.OutputFileName, ".md"));
 
         return false;

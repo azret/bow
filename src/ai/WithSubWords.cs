@@ -112,7 +112,7 @@ namespace System.Ai.Trainers {
         double loss = 0,
             cc = 0;
 
-        string ITrainer.Progress => $"Loss: {(loss / cc)}";
+        public string Progress => $"Loss: {(loss / cc)}";
 
         void ITrainer.Fit(Func<bool> HasCtrlBreak) {
             string[] lines = File.ReadAllLines(

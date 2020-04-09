@@ -9,13 +9,20 @@ using System.Threading;
 
 namespace System.Ai.Trainers {
     public class ContinuousBagOfWords : Logistic, ITrainer {
-        const int VERBOSITY = 13;
+        /// <summary>
+        /// Current learning rate.
+        /// </summary>
+        public readonly float LearningRate;
 
-        const float lr = 0.13371f;
+        /// <summary>
+        /// Number of negative samples per one positive.
+        /// </summary>
+        public readonly int Negatives;
 
-        const int
-                NEGATIVES = 3,
-            WINDOW = 3;
+        /// <summary>
+        /// Scan Window
+        /// </summary>
+        public readonly int Window;
 
         Tensor[] NegDistr;
 
@@ -25,10 +32,16 @@ namespace System.Ai.Trainers {
 
         IOrthography Orthography;
 
-        public ContinuousBagOfWords(IModel model, string dir, string searchPattern, SearchOption searchOption, IOrthography orthography) {
+        public ContinuousBagOfWords(IModel model, string seachPath, string searchPattern,
+            SearchOption searchOption, IOrthography orthography, float learningRate,
+            int negatives, int window) {
+            LearningRate = learningRate;
+            Negatives = negatives;
+            Window = window;
             Model = model;
             Orthography = orthography;
-            Files = Tools.GetFiles(dir,
+            Files = Tools.GetFiles(
+                seachPath,
                 searchPattern,
                 searchOption
             ).ToArray();
@@ -51,6 +64,20 @@ namespace System.Ai.Trainers {
                 }
             }
             Console.WriteLine($"Done.");
+            CreateNegativeDistribution((int)1e7);
+        }
+
+        public void Load(string fileName) {
+            Model.Clear();
+            Console.WriteLine($"Reading {Tools.GetShortPath(fileName)}...");
+            foreach (var t in System.Ai.Model.Read(fileName)) {
+                var y = Model.Push(t.Id);
+                y.SetScore(t.GetScore());
+                y.SetVector(
+                    t.GetVector());
+            }
+            Console.WriteLine($"Done.");
+            CreateNegativeDistribution((int)1e7);
         }
 
         public static double PowScale(double score) {
@@ -78,7 +105,7 @@ namespace System.Ai.Trainers {
             return size;
         }
 
-        public void CreateNegativeDistribution(int size) {
+        void CreateNegativeDistribution(int size) {
             Console.Write($"\r\nCreating negative samples...\r\n");
             double norm = 0,
                     cc = 0;
@@ -136,7 +163,7 @@ namespace System.Ai.Trainers {
                             continue;
                         }
                         var X = new Bag();
-                        for (var start = focus - WINDOW - 1; start < focus + WINDOW + 1; start++) {
+                        for (var start = focus - Window - 1; start < focus + Window + 1; start++) {
                             if (start != focus && start >= 0 && start < scan.Length &&
                                 scan[start].Type == PlainTextTag.TEXT) {
                                 string c = Orthography.GetKey(buff.Substring(
@@ -149,9 +176,9 @@ namespace System.Ai.Trainers {
                         }
                         if (X.Count > 0) {
                             LearnFromPositiveSample(X, y);
-                            for (int j = 0; j < NEGATIVES; j++) {
+                            for (int j = 0; j < Negatives; j++) {
                                 var Z = new Bag();
-                                for (var start = 0; start < WINDOW; start++) {
+                                for (var start = 0; start < Window; start++) {
                                     Z.Push(NegDistr[global::Random.Next(NegDistr.Length)].Id);
                                 }
                                 LearnFromNegativeSample(Z, y);
@@ -165,7 +192,7 @@ namespace System.Ai.Trainers {
         void LearnFromPositiveSample(Bag X, Tensor y) {
             if (X.Count > 0) {
                 const float POSITIVE = 1.0f;
-                var σ = Sgd(lr, ref loss, ref cc, out double err,
+                var σ = Sgd(LearningRate, ref loss, ref cc, out double err,
                     POSITIVE, y.GetVector(), Model.Select(X));
                 if (!double.IsNaN(err) && !double.IsInfinity(err)) {
                     loss += err;
@@ -180,7 +207,7 @@ namespace System.Ai.Trainers {
         void LearnFromNegativeSample(Bag Z, Tensor y) {
             if (Z.Count > 0) {
                 const float NEGATIVE = 0.0f;
-                var σ = Sgd(lr, ref loss, ref cc, out double err,
+                var σ = Sgd(LearningRate, ref loss, ref cc, out double err,
                     NEGATIVE, y.GetVector(), Model.Select(Z));
                 if (!double.IsNaN(err) && !double.IsInfinity(err)) {
                     loss += err;
@@ -211,6 +238,8 @@ namespace System.Ai.Trainers {
             }
             return σ;
         }
+
+        const int VERBOSITY = 13;
 
         int _verbOut;
 

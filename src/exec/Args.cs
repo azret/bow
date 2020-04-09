@@ -6,6 +6,15 @@ public class Args {
         Gens = (int)1e6,
             Dims = 73;
 
+    public readonly int
+            Negatives = 3,
+        Window = 3;
+
+    /// <summary>
+    /// Learning Rate
+    /// </summary>
+    public readonly float lr = 0.13371f;
+
     /// <summary>
     /// Parser
     /// </summary>

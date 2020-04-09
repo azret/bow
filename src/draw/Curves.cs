@@ -10,17 +10,17 @@ unsafe partial class Curves {
         g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
         g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
         DrawPaper(g, r);
-        var X = W.Take(1024 * 3).Select(f => f.GetScore()).ToArray();
-        DrawVector(g, r, Norm(X), Pens.OrangeRed.Color);
-        DrawVector(g, r, Norm(PowScale(X)), Pens.DarkRed.Color);
-        DrawVector(g, r, Norm(LogScale(X)), Pens.DarkBlue.Color);
+        var X = W.Take(1024 * 7).Select(f => f.GetScore()).ToArray();
+        DrawVector(g, r, Norm(X), Pens.OrangeRed.Color, null);
+        DrawVector(g, r, Norm(PowScale(X)), Pens.DarkRed.Color, null);
+        DrawVector(g, r, Norm(LogScale(X)), Pens.DarkBlue.Color, null);
         DrawPhase(g, r, t);
     }
 
     static float[] PowScale(float[] X) {
         var Pow = new float[X.Length];
         for (int i = 0; i < Pow.Length; i++) {
-            Pow[i] = (float)Math.Pow(X[i], 0.1);
+            Pow[i] = (float)Math.Pow(X[i], 1f/3f);
         }
         return Pow;
     }
@@ -104,7 +104,8 @@ unsafe partial class Curves {
     private static void DrawVector(Graphics g,
         RectangleF r,
         float[] F,
-        Color color) {
+        Color color,
+        Func<int, int, double> envelope) {
         float linf(float val, float from, float to) {
             return (val * (to / from));
         }
@@ -114,7 +115,7 @@ unsafe partial class Curves {
             var dots = new List<PointF>();
             var pen = new Pen(color, 2f);
             for (int i = 0; i < F.Length; i++) {
-                var ampl = F[i];
+                var ampl = F[i] * (envelope != null ? envelope(i, F.Length) : 1);
                 if (ampl < -1) {
                     ampl = -1;
                 }

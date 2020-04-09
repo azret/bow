@@ -48,37 +48,37 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ai\Mikolov.cs" />
-    <Compile Include="ai\Core\Bag.cs" />
-    <Compile Include="ai\Core\Dot.cs" />
-    <Compile Include="ai\Core\Hash.cs" />
-    <Compile Include="ai\Model\IModel.cs" />
-    <Compile Include="ai\Core\ITensor.cs" />
-    <Compile Include="ai\Model\ITrainer.cs" />
-    <Compile Include="ai\Model\Model.cs" />
-    <Compile Include="ai\Model\Search.cs" />
-    <Compile Include="ai\Core\Tensor.cs" />
-    <Compile Include="ai\Model\Trainer.cs" />
+    <Compile Include="include\Collections\Bag.cs" />
+    <Compile Include="include\Math\Dot.cs" />
+    <Compile Include="include\Collections\Hash.cs" />
+    <Compile Include="ai\IModel.cs" />
+    <Compile Include="include\Math\ITensor.cs" />
+    <Compile Include="ai\ITrainer.cs" />
+    <Compile Include="ai\Model.cs" />
+    <Compile Include="ai\Search.cs" />
+    <Compile Include="include\Math\Tensor.cs" />
+    <Compile Include="ai\Trainer.cs" />
     <Compile Include="ai\WithSubWords.cs" />
     <Compile Include="exec\Args.cs" />
     <Compile Include="exec\Verify.cs" />
     <Compile Include="exec\Exec.cs" />
-    <Compile Include="ai\Core\Logistic.cs" />
-    <Compile Include="include\System.Text\Orthography\CSharp.cs" />
-    <Compile Include="include\System.Text\Orthography\English.cs" />
-    <Compile Include="include\System.Text\Orthography\Latin.cs" />
+    <Compile Include="include\Math\Logistic.cs" />
+    <Compile Include="include\Text\Orthography\CSharp.cs" />
+    <Compile Include="include\Text\Orthography\English.cs" />
+    <Compile Include="include\Text\Orthography\Latin.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="include\System.IO\Tools.cs" />
+    <Compile Include="include\IO\Tools.cs" />
     <Compile Include="draw\Curves.cs" />
     <Compile Include="include\Math\Envelopes.cs" />
-    <Compile Include="include\Microsoft.Win32\Mic32.cs" />
-    <Compile Include="include\Microsoft.Win32\Gdi32.cs" />
-    <Compile Include="include\Microsoft.Win32\Win32.cs" />
-    <Compile Include="include\System.Text\Orthography\Orthography.cs" />
-    <Compile Include="include\System.Text\Parse.cs" />
+    <Compile Include="include\Win32\Mic32.cs" />
+    <Compile Include="include\Win32\Gdi32.cs" />
+    <Compile Include="include\Win32\Win32.cs" />
+    <Compile Include="include\Text\Orthography\Orthography.cs" />
+    <Compile Include="include\Text\Parse.cs" />
     <Compile Include="App.cs" />
     <Compile Include="include\Math\Complex.cs" />
     <Compile Include="include\Math\IFunc.cs" />
@@ -101,6 +101,8 @@
       <CustomToolNamespace>Properties</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="include\Shared\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
