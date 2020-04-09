@@ -3,6 +3,9 @@
         public CSharp() {
         }
         public static IOrthography Instance = new CSharp();
+        public string[] Decompose(string s) {
+            throw new NotImplementedException();
+        }
         public string GetKey(string s) {
             StringBuilder _out = new StringBuilder();
             for (var i = 0; i < s.Length; i++) {

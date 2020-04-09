@@ -8,7 +8,7 @@ using System.Text.Orthography;
 using System.Threading;
 
 namespace System.Ai.Trainers {
-    public class ContinuousBagOfWords : Logistic, ITrainer {
+    public class WithSubWords : Logistic, ITrainer {
         const int VERBOSITY = 13;
 
         const float lr = 0.13371f;
@@ -19,14 +19,16 @@ namespace System.Ai.Trainers {
 
         Tensor[] NegDistr;
 
-        public IModel Model { get; }
+        public readonly IModel Model;
+        public readonly IModel SubWords;
 
         string[] Files { get; }
 
         IOrthography Orthography;
 
-        public ContinuousBagOfWords(IModel model, string dir, string searchPattern, SearchOption searchOption, IOrthography orthography) {
-            Model = model;
+        public WithSubWords(int capacity, int dims, string dir, string searchPattern,
+            SearchOption searchOption, IOrthography orthography) {
+            Model = new System.Ai.Model(capacity, dims);
             Orthography = orthography;
             Files = Tools.GetFiles(dir,
                 searchPattern,
@@ -110,7 +112,7 @@ namespace System.Ai.Trainers {
         double loss = 0,
             cc = 0;
 
-        public string Progress => $"Loss: {(loss / cc)}";
+        string ITrainer.Progress => $"Loss: {(loss / cc)}";
 
         void ITrainer.Fit(Func<bool> HasCtrlBreak) {
             string[] lines = File.ReadAllLines(

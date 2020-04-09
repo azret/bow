@@ -10,13 +10,10 @@ unsafe partial class Curves {
         g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
         g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
         DrawPaper(g, r);
-
         var X = W.Take(1024 * 3).Select(f => f.GetScore()).ToArray();
-
         DrawVector(g, r, Norm(X), Pens.OrangeRed.Color);
         DrawVector(g, r, Norm(PowScale(X)), Pens.DarkRed.Color);
         DrawVector(g, r, Norm(LogScale(X)), Pens.DarkBlue.Color);
-
         DrawPhase(g, r, t);
     }
 

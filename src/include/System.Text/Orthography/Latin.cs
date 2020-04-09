@@ -3,6 +3,23 @@
         public Latin() {
         }
         public static IOrthography Instance = new Latin();
+        public string[] Decompose(string k) {
+            if (k.Length <= 3) {
+                return null;
+            } else {
+                int n = 0;
+                var atoms = new string[k.Length];
+                for (int i = 0; i < k.Length; i++) {
+                    if (i - 1 >= 0 && i + 1 < k.Length) {
+                        atoms[n] = k.Substring(i - 1, 3);
+                        n++;
+                    }
+                }
+                Array.Resize(
+                    ref atoms, n);
+                return atoms;
+            }
+        }
         public string GetKey(string s) {
             StringBuilder _out = new StringBuilder();
             for (var i = 0; i < s.Length; i++) {

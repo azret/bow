@@ -58,6 +58,51 @@ namespace System.Ai {
     }
 
     public partial class Model {
+        public static void Dump(IEnumerable<Tensor> Model, int dims, string outputFilePath) {
+            Console.Write($"\r\nSaving: {outputFilePath}...\r\n");
+            using (var stream = new FileStream(outputFilePath, FileMode.Create, FileAccess.Write, FileShare.None)) {
+                int i = 0;
+                string s;
+                if (dims > 0) {
+                    s = $"ML " +
+                        $"| {dims}\r\n\r\n";
+                } else {
+                    s = $"ML\r\n\r\n";
+                }
+                byte[] bytes = Encoding.UTF8.GetBytes(s);
+                stream.Write(bytes,
+                    0, bytes.Length);
+                foreach (Tensor it in Model) {
+                    if (it == null) {
+                        continue;
+                    }
+                    var sz = new StringBuilder();
+                    Complex[] w = it.GetVector();
+                    if (w != null) {
+                        for (var j = 0; j < Math.Min(w.Length, 7); j++) {
+                            if (sz.Length > 0) {
+                                sz.Append(" ");
+                            }
+                            sz.Append(w[j]);
+                        }
+                    }
+                    float score = it.GetScore();
+                    if (sz.Length > 0) {
+                        s = $"**{it.Id}** | {score} | {sz.ToString()}\r\n";
+                    } else {
+                        s = $"**{it.Id}** | {score}\r\n";
+                    }
+                    bytes = Encoding.UTF8.GetBytes(s);
+                    stream.Write(bytes,
+                        0, bytes.Length);
+                    i++;
+                }
+            }
+            Console.Write("\r\nReady!\r\n");
+        }
+    }
+
+    public partial class Model {
         static void WriteBytes(FileStream file, byte[] value) => file.Write(value, 0, value.Length);
         static void WriteLong(FileStream file, long value) => WriteBytes(file, BitConverter.GetBytes(value));
         static void WriteInt(FileStream file, int value) => WriteBytes(file, BitConverter.GetBytes(value));
@@ -193,44 +238,6 @@ namespace System.Ai {
                     }
                 }
             }
-        }
-        public static void Dump(IEnumerable<Tensor> Model, int dims, string outputFilePath) {
-            Console.Write($"\r\nSaving: {outputFilePath}...\r\n");
-            using (var stream = new FileStream(outputFilePath, FileMode.Create, FileAccess.Write, FileShare.None)) {
-                int i = 0;
-                string s;
-                s = $"ML " +
-                    $"| {dims}\r\n\r\n";
-                byte[] bytes = Encoding.UTF8.GetBytes(s);
-                stream.Write(bytes,
-                    0, bytes.Length);
-                foreach (Tensor it in Model) {
-                    if (it == null || it.GetScore() <= 1) {
-                        continue;
-                    }
-                    var sz = new StringBuilder();
-                    Complex[] w = it.GetVector();
-                    if (w != null) {
-                        for (var j = 0; j < Math.Min(w.Length, 7); j++) {
-                            if (sz.Length > 0) {
-                                sz.Append(" ");
-                            }
-                            sz.Append(w[j]);
-                        }
-                    }
-                    float score = it.GetScore();
-                    if (sz.Length > 0) {
-                        s = $"**{it.Id}** | {score} | {sz.ToString()}\r\n";
-                    } else {
-                        s = $"**{it.Id}** | {score}\r\n";
-                    }
-                    bytes = Encoding.UTF8.GetBytes(s);
-                    stream.Write(bytes,
-                        0, bytes.Length);
-                    i++;
-                }
-            }
-            Console.Write("\r\nReady!\r\n");
         }
     }
 }

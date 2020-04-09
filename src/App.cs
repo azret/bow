@@ -15,11 +15,24 @@ unsafe partial class App {
         set => Environment.CurrentDirectory = value;
     }
 
-    public System.Ai.ITrainer Session;
+    public System.Ai.IModel CurrentModel {
+        get;
+        set;
+    }
+
+    static void Main() {
+        InitCliHandlers(new Args(
+            Latin.Instance,
+            null,
+            "*.cs;*.la"));
+        RunCli(new App());
+    }
+
+    #region Cli
 
     static IDictionary<string, Func<App, string, Func<bool>, bool>> _handlers = new Dictionary<string, Func<App, string, Func<bool>, bool>>();
 
-    static void InitCliHandlers() {
+    static void InitCliHandlers(Args args) {
         _handlers["--verify"] = (
             App app,
             string cliScript,
@@ -32,12 +45,6 @@ unsafe partial class App {
                 }
                 return global::Verify.Run(app, app.CurrentDirectory, IsTerminated);
             };
-
-        Args args = new Args(
-            CSharp.Instance,
-            null,
-            "*.cs;*.la");
-
         _handlers["--fit"] = (
             App app,
             string cliScript,
@@ -48,7 +55,7 @@ unsafe partial class App {
                 if (Directory.Exists(dir)) {
                     app.CurrentDirectory = dir;
                 }
-                return global::Exec.Fit(app, args.Create(app.CurrentDirectory), IsTerminated);
+                return global::Exec.Fit(app, new Args(args, app.CurrentDirectory), IsTerminated);
             };
         _handlers["--count"] = (
             App app,
@@ -60,7 +67,7 @@ unsafe partial class App {
                 if (Directory.Exists(dir)) {
                     app.CurrentDirectory = dir;
                 }
-                return global::Exec.Count(app, args.Create(app.CurrentDirectory), IsTerminated);
+                return global::Exec.Count(app, new Args(args, app.CurrentDirectory), IsTerminated);
             };
         _handlers["--touch"] = (
             App app,
@@ -78,13 +85,6 @@ unsafe partial class App {
                 return false;
             };
     }
-
-    static void Main() {
-        InitCliHandlers();
-        RunCli(new App());
-    }
-
-    #region Cli
 
     public static void RunCli(App app) {
         var HasCtrlBreak = false;
